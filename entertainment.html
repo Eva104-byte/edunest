@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Entertainment Hub</title>
@@ -371,7 +372,7 @@ function playVideo(id, url, title){
 
   // Track views
   const fd=new FormData(); fd.append('action','increment_views'); fd.append('id',id);
-  fetch('entertainment_api.php',{method:'POST',body:fd}).then(()=>{
+  fetch(API('entertainment_api.php'), {method:'POST',body:fd}).then(()=>{
     const v=videos.find(v=>v.id==id); if(v) v.views++;
   });
 }
@@ -400,7 +401,7 @@ async function deleteVideo(e,id){
   e.stopPropagation();
   if(!confirm('Remove this video?'))return;
   const fd=new FormData(); fd.append('action','delete_video'); fd.append('id',id);
-  const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+  const r=await fetch(API('entertainment_api.php'), {method:'POST',body:fd});
   const d=await r.json();
   if(d.success){videos=videos.filter(v=>v.id!=id); renderVideos();}
 }
@@ -425,7 +426,7 @@ async function doUpload(fileList){
     const fd=new FormData(); fd.append('action','upload_video'); fd.append('video',file); fd.append('title',title); fd.append('category',cat);
     try{
       let p=3; const iv=setInterval(()=>{p=Math.min(p+Math.random()*10,88);fill.style.width=p+'%';},400);
-      const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+      const r=await fetch(API('entertainment_api.php'), {method:'POST',body:fd});
       clearInterval(iv); fill.style.width='100%';
       const d=await r.json();
       if(d.success){msg.textContent='✅ Uploaded: '+file.name; document.getElementById('vidTitle').value=''; await loadVideos();}
@@ -480,7 +481,7 @@ audioEl.addEventListener('pause',()=>{
 
 async function loadAudio(){
   try{
-    const r=await fetch('entertainment_api.php?action=get_audio');
+    const r=await fetch(API('entertainment_api.php?action=get_audio'));
     const text=await r.text();
     let d; try{d=JSON.parse(text);}catch(e){console.error('Audio load: invalid JSON');return;}
     if(d.success){tracks=d.tracks||[]; renderAudio();}
@@ -584,7 +585,7 @@ async function deleteTrack(id){
   if(!confirm('Delete this track?'))return;
   const fd=new FormData(); fd.append('action','delete_audio'); fd.append('id',id);
   try{
-    const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+    const r=await fetch(API('entertainment_api.php'), {method:'POST',body:fd});
     const d=await r.json();
     if(d.success){
       // If currently playing this track, stop
@@ -618,7 +619,7 @@ async function doAudioUpload(fileList){
     fd.append('title',title); fd.append('artist',artist); fd.append('album',album);
     try{
       let p=3; const iv=setInterval(()=>{p=Math.min(p+Math.random()*10,88);fill.style.width=p+'%';},400);
-      const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+      const r=await fetch(API('entertainment_api.php'), {method:'POST',body:fd});
       clearInterval(iv); fill.style.width='100%';
       const text=await r.text();
       let d; try{d=JSON.parse(text);}catch(e){d={success:false,message:'Invalid server response'};}

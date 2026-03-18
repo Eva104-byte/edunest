@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Setup Checker</title>
@@ -126,7 +127,7 @@
     const tablesEl = document.getElementById('chkTables');
     const uploadsEl = document.getElementById('chkUploads');
     try {
-      const r = await fetch('check.php');
+      const r = await fetch(API('check.php'));
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const d = await r.json();
 

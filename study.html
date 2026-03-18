@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Study Area</title>
@@ -599,14 +600,25 @@ async function safeJson(response) {
   try {
     return JSON.parse(text);
   } catch(e) {
-    // Server returned HTML instead of JSON — session expired or XAMPP not running
     if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-      console.warn('Server returned HTML instead of JSON. Session may have expired or XAMPP is not running.');
-      return { success: false, message: 'Session expired or server unavailable. Please refresh the page.' };
+      // HTML response = PHP error, session issue, or XAMPP not running
+      if (response.status === 401 || response.status === 403) {
+        return { success: false, message: 'Session expired. Please log in again.', code: 'SESSION_EXPIRED' };
+      }
+      return { success: false, message: 'Server returned an error page. Is XAMPP running?', code: 'HTML_RESPONSE' };
     }
-    console.error('Invalid JSON response:', text.slice(0, 200));
-    return { success: false, message: 'Invalid server response. Is XAMPP running?' };
+    return { success: false, message: 'Invalid server response.', code: 'PARSE_ERROR' };
   }
+}
+
+function handleApiError(d) {
+  if (d.code === 'SESSION_EXPIRED') {
+    // Store a message and redirect to login
+    sessionStorage.setItem('loginMsg', 'Your session expired. Please log in again.');
+    window.location.href = 'index.html';
+    return true;
+  }
+  return false;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -614,13 +626,14 @@ async function safeJson(response) {
 // ══════════════════════════════════════════════════════════
 async function loadFiles() {
   try {
-    const r = await fetch('tasks_api.php?action=get_files');
+    const r = await fetch(API('tasks_api.php?action=get_files'));
     const d = await safeJson(r);
     if (d.success) {
       files = d.files;
       renderFiles(); renderFolderTree(); renderBreadcrumb();
-    } else if (d.message?.includes('Session expired')) {
-      showServerError(d.message);
+    } else {
+      if (handleApiError(d)) return;
+      showServerError(d.message || 'Could not load files.');
     }
   } catch(e) {
     console.error('loadFiles network error:', e);
@@ -633,7 +646,9 @@ function showServerError(msg) {
   if (grid) grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
     <div class="icon">⚠️</div>
     <p style="color:#b91c1c;font-weight:600">${esc(msg)}</p>
-    <p style="margin-top:8px;font-size:12px;color:#aaa">Check that XAMPP Apache and MySQL are both running,<br>then refresh the page.</p>
+    <p style="margin-top:8px;font-size:12px;color:#aaa">
+      Make sure XAMPP Apache and MySQL are both running,<br>then refresh the page.
+    </p>
   </div>`;
 }
 
@@ -783,9 +798,10 @@ async function uploadFiles(fileList){
     const fd=new FormData(); fd.append('action','upload_file'); fd.append('file',file);
     try{
       let p=5; const iv=setInterval(()=>{p=Math.min(p+Math.random()*12,88);fill.style.width=p+'%';},400);
-      const r=await fetch('tasks_api.php',{method:'POST',body:fd});
+      const r=await fetch(API('tasks_api.php'), {method:'POST',body:fd});
       clearInterval(iv); fill.style.width='100%';
       const d=await safeJson(r);
+      if (handleApiError(d)) return;
       if(d.success){
         msg.textContent='✅ '+file.name+' uploaded!';
         if(targetFolder){const map=getFileMap(); map[d.id]=targetFolder; saveFileMap(map);}
@@ -801,8 +817,9 @@ async function delFile(id){
   if(!confirm('Delete this file?')) return;
   try {
     const fd=new FormData(); fd.append('action','delete_file'); fd.append('id',id);
-    const r=await fetch('tasks_api.php',{method:'POST',body:fd});
+    const r=await fetch(API('tasks_api.php'), {method:'POST',body:fd});
     const d=await safeJson(r);
+    if (handleApiError(d)) return;
     if(d.success){
       files=files.filter(f=>f.id!=id);
       const map=getFileMap(); delete map[id]; saveFileMap(map);

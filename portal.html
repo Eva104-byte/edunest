@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — My Portal</title>
@@ -406,7 +407,7 @@ document.addEventListener('click',e=>{
 // ── Student data + live stats ──
 async function loadStudent(){
   try{
-    const r=await fetch('auth.php?action=check');
+    const r=await fetch(API('auth.php?action=check'));
     const d=await r.json();
     if(!d.success){window.location.href='index.html';return;}
     const s=d.student;
@@ -422,7 +423,7 @@ async function loadStudent(){
 
 async function loadLiveStats(){
   try{
-    const r=await fetch('profile_api.php?action=get_stats');
+    const r=await fetch(API('profile_api.php?action=get_stats'));
     const d=await r.json();
     if(!d.success)return;
     const s=d.stats;
@@ -481,7 +482,7 @@ function fillProfile(s){
 }
 
 async function logout(){
-  try{await fetch('auth.php?action=logout');}catch(e){}
+  try{await fetch(API('auth.php?action=logout'));}catch(e){}
   localStorage.removeItem('student');
   window.location.href='index.html';
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Calendar & Goals</title>
@@ -253,7 +254,7 @@
 
   async function loadEvents() {
     try {
-      const r = await fetch('calendar_api.php?action=get_events&month='+currentMonth);
+      const r = await fetch(API('calendar_api.php?action=get_events&month=')+currentMonth);
       const d = await r.json();
       if(d.success) events = d.events;
     } catch(e){}
@@ -261,7 +262,7 @@
 
   async function loadGoals() {
     try {
-      const r = await fetch('calendar_api.php?action=get_goals');
+      const r = await fetch(API('calendar_api.php?action=get_goals'));
       const d = await r.json();
       if(d.success) { goals = d.goals; renderGoals(); }
     } catch(e){}
@@ -367,7 +368,7 @@
     fd.append('title',title); fd.append('description',document.getElementById('evDesc').value);
     fd.append('event_date',date); fd.append('event_time',document.getElementById('evTime').value);
     fd.append('color',selectedColor);
-    const r=await fetch('calendar_api.php',{method:'POST',body:fd});
+    const r=await fetch(API('calendar_api.php'), {method:'POST',body:fd});
     const d=await r.json();
     if(d.success){
       // Create recurring occurrences (8 forward)
@@ -380,7 +381,7 @@
           fd2.append('event_date',ed);
           fd2.append('event_time',document.getElementById('evTime').value);
           fd2.append('color',selectedColor);
-          await fetch('calendar_api.php',{method:'POST',body:fd2});
+          await fetch(API('calendar_api.php'), {method:'POST',body:fd2});
         }
       }
       closeEventModal();await loadEvents();renderCalendar();if(selectedDate)selectDay(selectedDate);
@@ -402,7 +403,7 @@
   async function deleteEvent(id) {
     if(!confirm('Delete this event?'))return;
     const fd=new FormData(); fd.append('action','delete_event'); fd.append('id',id);
-    const r=await fetch('calendar_api.php',{method:'POST',body:fd});
+    const r=await fetch(API('calendar_api.php'), {method:'POST',body:fd});
     const d=await r.json();
     if(d.success){await loadEvents();renderCalendar();if(selectedDate)selectDay(selectedDate);}
   }
@@ -434,7 +435,7 @@
     fd.append('title',title); fd.append('description',document.getElementById('goalDesc').value);
     fd.append('target_date',document.getElementById('goalTarget').value);
     if(id){const g=goals.find(g=>g.id==id); fd.append('progress',g.progress); fd.append('status',g.status);}
-    const r=await fetch('calendar_api.php',{method:'POST',body:fd});
+    const r=await fetch(API('calendar_api.php'), {method:'POST',body:fd});
     const d=await r.json();
     if(d.success){closeGoalModal();await loadGoals();}else alert(d.message);
   }
@@ -445,7 +446,7 @@
     fd.append('title',g.title); fd.append('description',g.description||'');
     fd.append('target_date',g.target_date||''); fd.append('progress',progress);
     fd.append('status',progress>=100?'completed':g.status);
-    await fetch('calendar_api.php',{method:'POST',body:fd});
+    await fetch(API('calendar_api.php'), {method:'POST',body:fd});
     g.progress=progress; if(progress>=100)g.status='completed';
     renderGoals();
   }
@@ -455,14 +456,14 @@
     const fd=new FormData(); fd.append('action','update_goal'); fd.append('id',id);
     fd.append('title',g.title); fd.append('description',g.description||'');
     fd.append('target_date',g.target_date||''); fd.append('progress',100); fd.append('status','completed');
-    await fetch('calendar_api.php',{method:'POST',body:fd});
+    await fetch(API('calendar_api.php'), {method:'POST',body:fd});
     g.progress=100; g.status='completed'; renderGoals();
   }
 
   async function deleteGoal(id) {
     if(!confirm('Delete this goal?'))return;
     const fd=new FormData(); fd.append('action','delete_goal'); fd.append('id',id);
-    const r=await fetch('calendar_api.php',{method:'POST',body:fd});
+    const r=await fetch(API('calendar_api.php'), {method:'POST',body:fd});
     const d=await r.json();
     if(d.success){goals=goals.filter(g=>g.id!=id);renderGoals();}
   }

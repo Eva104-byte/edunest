@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Task Manager</title>
@@ -313,7 +314,7 @@
 
   async function loadTasks() {
     try {
-      const r = await fetch('tasks_api.php?action=get_tasks');
+      const r = await fetch(API('tasks_api.php?action=get_tasks'));
       const d = await r.json();
       if (d.success) { tasks = d.tasks; renderTasks(); }
     } catch(e) { console.error('Load tasks error:', e); }
@@ -321,7 +322,7 @@
 
   async function loadFiles() {
     try {
-      const r = await fetch('tasks_api.php?action=get_files');
+      const r = await fetch(API('tasks_api.php?action=get_files'));
       const d = await r.json();
       if (d.success) { files = d.files; renderFiles(); }
     } catch(e) { console.error('Load files error:', e); }
@@ -527,7 +528,7 @@
   async function setStatus(id, status) {
     const fd = new FormData();
     fd.append('action','update_task'); fd.append('id',id); fd.append('status',status);
-    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const r = await fetch(API('tasks_api.php'), {method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { const t=tasks.find(t=>t.id==id); if(t) t.status=status; renderTasks(); }
   }
@@ -576,7 +577,7 @@
     fd.append('description',document.getElementById('taskDesc').value);
     fd.append('priority',document.getElementById('taskPriority').value);
     fd.append('due_date',document.getElementById('taskDue').value);
-    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const r = await fetch(API('tasks_api.php'), {method:'POST',body:fd});
     const d = await r.json();
     if(d.success) {
       // Save colour + subtasks to localStorage
@@ -597,7 +598,7 @@
   async function deleteTask(id) {
     if(!confirm('Delete this task?')) return;
     const fd = new FormData(); fd.append('action','delete_task'); fd.append('id',id);
-    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const r = await fetch(API('tasks_api.php'), {method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { tasks=tasks.filter(t=>t.id!=id); renderTasks(); }
   }
@@ -605,7 +606,7 @@
   async function deleteFile(id) {
     if(!confirm('Delete this file?')) return;
     const fd = new FormData(); fd.append('action','delete_file'); fd.append('id',id);
-    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const r = await fetch(API('tasks_api.php'), {method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { files=files.filter(f=>f.id!=id); renderFiles(); }
   }
@@ -626,7 +627,7 @@
       prog.textContent='⏳ Uploading: '+file.name;
       const fd = new FormData(); fd.append('action','upload_file'); fd.append('file',file);
       try {
-        const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+        const r = await fetch(API('tasks_api.php'), {method:'POST',body:fd});
         const d = await r.json();
         if(d.success) { files.unshift({id:d.id,filename:d.filename,original_name:d.original_name,file_type:d.file_type,url:d.url,file_size:file.size}); renderFiles(); }
         else alert('Upload failed: '+d.message);

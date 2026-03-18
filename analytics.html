@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Analytics</title>
@@ -223,12 +224,12 @@ function setPeriod(p,btn){
 async function loadAll(){
   try{
     const [t,g,f,b,fi,e]=await Promise.allSettled([
-      fetch('tasks_api.php?action=get_tasks').then(r=>r.json()),
-      fetch('calendar_api.php?action=get_goals').then(r=>r.json()),
-      fetch('finance_api.php?action=get_transactions&month='+ym()).then(r=>r.json()),
-      fetch('finance_api.php?action=get_budgets&month='+ym()).then(r=>r.json()),
-      fetch('tasks_api.php?action=get_files').then(r=>r.json()),
-      fetch('calendar_api.php?action=get_events&month='+ym()).then(r=>r.json()),
+      fetch(API('tasks_api.php?action=get_tasks')).then(r=>r.json()),
+      fetch(API('calendar_api.php?action=get_goals')).then(r=>r.json()),
+      fetch(API('finance_api.php?action=get_transactions&month=')+ym()).then(r=>r.json()),
+      fetch(API('finance_api.php?action=get_budgets&month=')+ym()).then(r=>r.json()),
+      fetch(API('tasks_api.php?action=get_files')).then(r=>r.json()),
+      fetch(API('calendar_api.php?action=get_events&month=')+ym()).then(r=>r.json()),
     ]);
     if(t.value?.success) allTasks=t.value.tasks||[];
     if(g.value?.success) allGoals=g.value.goals||[];
@@ -237,7 +238,7 @@ async function loadAll(){
     if(fi.value?.success) allFiles=fi.value.files||[];
     if(e.value?.success) allEvents=e.value.events||[];
     // Also load summary
-    const s=await fetch('profile_api.php?action=get_stats').then(r=>r.json());
+    const s=await fetch(API('profile_api.php?action=get_stats')).then(r=>r.json());
     renderKPIs(s.success?s.stats:{});
     renderAll();
   }catch(err){console.error('Analytics load error:',err);}

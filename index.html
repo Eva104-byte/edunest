@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Student Portal</title>
@@ -160,8 +161,14 @@
 <script>
   // Check if already logged in
   window.onload = async () => {
+    // Show message if redirected here after session expiry
+    const msg = sessionStorage.getItem('loginMsg');
+    if (msg) {
+      sessionStorage.removeItem('loginMsg');
+      showMsg('loginMsg', msg, 'error');
+    }
     try {
-      const r = await fetch('auth.php?action=check');
+      const r = await fetch(API('auth.php?action=check'));
       const d = await r.json();
       if (d.success) window.location.href = 'portal.html';
     } catch(e){}
@@ -189,7 +196,7 @@
     try {
       const fd = new FormData();
       fd.append('action','login'); fd.append('email',email); fd.append('password',pw);
-      const r = await fetch('auth.php', {method:'POST',body:fd});
+      const r = await fetch(API('auth.php'), {method:'POST',body:fd});
       if (!r.ok) { throw new Error('HTTP ' + r.status + ' - Make sure files are inside htdocs/student_system/'); }
       const text = await r.text();
       let d;
@@ -229,7 +236,7 @@
       fd.append('action','register'); fd.append('full_name',name);
       fd.append('email',email); fd.append('course',course);
       fd.append('year_of_study',year); fd.append('password',pw);
-      const r = await fetch('auth.php', {method:'POST',body:fd});
+      const r = await fetch(API('auth.php'), {method:'POST',body:fd});
       if (!r.ok) { throw new Error('HTTP ' + r.status + ' — Make sure files are inside htdocs/student_system/ and Apache is running.'); }
       const text = await r.text();
       let d;

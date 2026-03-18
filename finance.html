@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+<script src="api.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EduNest — Finance Manager</title>
@@ -254,7 +255,7 @@
 
   async function loadTransactions(){
     try{
-      const r=await fetch('finance_api.php?action=get_transactions&month='+currentMonth);
+      const r=await fetch(API('finance_api.php?action=get_transactions&month=')+currentMonth);
       const d=await r.json();
       if(d.success){transactions=d.transactions; renderTransactions();}
     }catch(e){console.error('loadTransactions error',e);}
@@ -262,7 +263,7 @@
 
   async function loadSummary(){
     try{
-      const r=await fetch('finance_api.php?action=get_summary&month='+currentMonth);
+      const r=await fetch(API('finance_api.php?action=get_summary&month=')+currentMonth);
       const d=await r.json();
       if(d.success){
         // Safely store summary; ensure by_category is always an object
@@ -283,7 +284,7 @@
 
   async function loadBudgets(){
     try{
-      const r=await fetch('finance_api.php?action=get_budgets&month='+currentMonth);
+      const r=await fetch(API('finance_api.php?action=get_budgets&month=')+currentMonth);
       const d=await r.json();
       if(d.success){budgets=d.budgets||[];}
     }catch(e){console.error('loadBudgets error',e);}
@@ -382,7 +383,7 @@
     fd.append('category',cat); fd.append('amount',amount);
     fd.append('description',desc); fd.append('transaction_date',date);
     try{
-      const r=await fetch('finance_api.php',{method:'POST',body:fd});
+      const r=await fetch(API('finance_api.php'), {method:'POST',body:fd});
       const d=await r.json();
       if(d.success){
         document.getElementById('txAmount').value='';
@@ -397,7 +398,7 @@
     if(!confirm('Delete this transaction?'))return;
     const fd=new FormData(); fd.append('action','delete_transaction'); fd.append('id',id);
     try{
-      const r=await fetch('finance_api.php',{method:'POST',body:fd});
+      const r=await fetch(API('finance_api.php'), {method:'POST',body:fd});
       const d=await r.json();
       if(d.success) await Promise.all([loadTransactions(), loadSummaryAndBudgets()]);
     }catch(e){alert('Delete failed. Is XAMPP running?');}
@@ -414,7 +415,7 @@
     fd.append('category_name',cat); fd.append('budget_amount',amount);
     fd.append('month_year',currentMonth);
     try{
-      const r=await fetch('finance_api.php',{method:'POST',body:fd});
+      const r=await fetch(API('finance_api.php'), {method:'POST',body:fd});
       const d=await r.json();
       if(d.success){
         document.getElementById('budgetAmount').value='';
