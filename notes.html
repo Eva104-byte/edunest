@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Notes & Whiteboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--ink:#0f0e17;--cream:#fffcf5;--gold:#e8b84b;--sage:#3d6b5e;--border:#e8e4db;--card:#fff;--bg:#f5f3ef}
+  body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
+  nav{background:var(--ink);padding:0 28px;display:flex;align-items:center;gap:12px;height:60px;position:sticky;top:0;z-index:200}
+  .back{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;transition:.2s}
+  .back:hover{background:rgba(255,255,255,.1);color:white}
+  .nav-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:white;margin-right:auto}
+  .btn{padding:9px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;border:none;display:inline-flex;align-items:center;gap:6px}
+  .btn-dark{background:var(--ink);color:white} .btn-dark:hover{background:#2a2930}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink)} .btn-ghost:hover{border-color:var(--ink)}
+  .btn-sage{background:var(--sage);color:white} .btn-sage:hover{background:#2d5248}
+  .btn-gold{background:var(--gold);color:var(--ink)} .btn-gold:hover{background:#d4a53a}
+  .btn-sm{padding:6px 13px;font-size:12px}
+
+  /* ── MAIN TABS ── */
+  .main-tabs{background:white;border-bottom:1.5px solid var(--border);padding:0 28px;display:flex;gap:2px;align-items:center}
+  .main-tab{padding:14px 20px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;border:none;color:#888;border-bottom:2px solid transparent;transition:.2s;font-family:'DM Sans',sans-serif}
+  .main-tab:hover{color:var(--ink)}
+  .main-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+  .tab-section{display:none} .tab-section.active{display:block}
+
+  /* ── LAYOUT ── */
+  .layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 104px)}
+
+  /* ── SIDEBAR ── */
+  .sidebar{background:white;border-right:1.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+  .sb-header{padding:16px 18px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .sb-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa}
+  .sb-add{width:28px;height:28px;border-radius:8px;background:var(--ink);color:white;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s}
+  .sb-add:hover{background:#2a2930}
+  .board-list{flex:1;overflow-y:auto;padding:8px}
+  .board-item{padding:10px 12px;border-radius:10px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:10px;position:relative}
+  .board-item:hover{background:#f5f3ef}
+  .board-item.active{background:#f0f0fc}
+  .board-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .board-name{font-weight:600;font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .board-count{font-size:11px;color:#aaa;flex-shrink:0}
+  .board-del{position:absolute;right:8px;opacity:0;background:none;border:none;cursor:pointer;color:#b91c1c;font-size:14px;padding:2px 5px;border-radius:5px;transition:.2s}
+  .board-item:hover .board-del{opacity:.6}
+  .board-del:hover{opacity:1!important;background:#fde8e9}
+  .sb-search{padding:10px 12px}
+  .sb-search input{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:.2s}
+  .sb-search input:focus{border-color:var(--ink)}
+
+  /* ── NOTES CONTENT ── */
+  .notes-content{display:flex;flex-direction:column;overflow:hidden}
+  .notes-toolbar{padding:14px 22px;background:white;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .board-title-display{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-right:auto}
+  .view-toggle{display:flex;gap:3px;background:#f0ece4;padding:3px;border-radius:9px}
+  .vbtn{padding:6px 11px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:14px;transition:.2s}
+  .vbtn.active{background:white;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .notes-grid{padding:20px 22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;overflow-y:auto;max-height:calc(100vh - 200px)}
+  .notes-list-view{padding:20px 22px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:calc(100vh - 200px)}
+
+  /* ── NOTE CARD ── */
+  .note-card{border-radius:14px;padding:18px;cursor:pointer;transition:all .3s;border:1.5px solid rgba(0,0,0,.06);position:relative;min-height:140px}
+  .note-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.12)}
+  .note-card.lv{min-height:auto;display:flex;align-items:center;gap:14px;padding:12px 16px}
+  .pin-btn{position:absolute;top:10px;right:10px;background:none;border:none;font-size:15px;cursor:pointer;opacity:.3;transition:.2s;padding:3px}
+  .pin-btn:hover,.note-card:hover .pin-btn,.pin-btn.on{opacity:1}
+  .note-title{font-weight:700;font-size:14px;margin-bottom:7px;padding-right:20px}
+  .note-preview{font-size:12px;color:rgba(0,0,0,.55);line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  .note-card.lv .note-preview{-webkit-line-clamp:1;flex:1}
+  .note-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+  .note-card.lv .note-footer{margin-top:0;flex-shrink:0}
+  .ntags{display:flex;gap:4px;flex-wrap:wrap}
+  .ntag{font-size:10px;padding:2px 7px;border-radius:8px;background:rgba(0,0,0,.1);font-weight:600}
+  .note-date{font-size:11px;color:rgba(0,0,0,.4)}
+  .ndel{background:none;border:none;font-size:13px;cursor:pointer;opacity:0;transition:.2s;padding:3px;border-radius:5px}
+  .note-card:hover .ndel{opacity:.5}
+  .ndel:hover{opacity:1!important;background:rgba(0,0,0,.1)}
+  .empty-notes{text-align:center;padding:60px 20px;color:#bbb;grid-column:1/-1}
+  .empty-notes .icon{font-size:48px;margin-bottom:12px}
+  .empty-notes p{font-size:14px}
+
+  /* ── WHITEBOARDS ── */
+  .wb-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 104px)}
+  .wb-sidebar{background:white;border-right:1.5px solid var(--border);display:flex;flex-direction:column}
+  .wb-list{flex:1;overflow-y:auto;padding:8px}
+  .wb-item{padding:10px 12px;border-radius:10px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:10px;position:relative}
+  .wb-item:hover{background:#f5f3ef}
+  .wb-item.active{background:#fff8e1;border-left:3px solid var(--gold)}
+  .wb-item-icon{font-size:20px;flex-shrink:0}
+  .wb-item-name{font-weight:600;font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wb-del{position:absolute;right:8px;opacity:0;background:none;border:none;cursor:pointer;color:#b91c1c;font-size:14px;padding:2px 5px;border-radius:5px;transition:.2s}
+  .wb-item:hover .wb-del{opacity:.6}
+  .wb-del:hover{opacity:1!important;background:#fde8e9}
+  .wb-canvas-area{flex:1;display:flex;flex-direction:column;background:#fafaf8}
+  .wb-toolbar{background:white;border-bottom:1.5px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .wb-board-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-right:auto}
+  .wt-btn{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--border);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.2s}
+  .wt-btn:hover,.wt-btn.active{background:var(--ink);color:white;border-color:var(--ink)}
+  .wt-sep{width:1px;height:24px;background:var(--border)}
+  .c-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.2s;flex-shrink:0}
+  .c-dot:hover,.c-dot.active{border-color:var(--ink);transform:scale(1.15)}
+  .sz-slider{width:80px;height:4px;cursor:pointer;accent-color:var(--ink)}
+  canvas#wbCanvas{display:block;flex:1;touch-action:none;cursor:crosshair;width:100%}
+
+  /* ── MODALS ── */
+  .modal{position:fixed;inset:0;background:rgba(15,14,23,.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-box{background:white;border-radius:20px;padding:36px;width:100%;max-width:520px;box-shadow:0 40px 80px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+  .modal-box h3{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:11px;font-weight:700;color:#555;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+  .field input,.field textarea,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:white;outline:none;transition:.2s;resize:vertical}
+  .field input:focus,.field textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(15,14,23,.06)}
+  .field textarea{min-height:160px;font-size:14px;line-height:1.7}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+  .color-pick{display:flex;gap:7px;flex-wrap:wrap}
+  .ec{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:.2s}
+  .ec:hover,.ec.active{border-color:var(--ink);transform:scale(1.15)}
+  .tb-row{display:flex;gap:2px;padding:8px 14px;background:#fafaf8;border-bottom:1.5px solid var(--border);flex-wrap:wrap}
+  .tb{padding:6px 10px;border-radius:7px;border:none;background:transparent;cursor:pointer;font-size:13px;transition:.2s;font-family:'DM Sans',sans-serif}
+  .tb:hover{background:#e8e4db}
+  .board-color-pick{display:flex;gap:7px;flex-wrap:wrap}
+  .bc{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.2s}
+  .bc:hover,.bc.active{border-color:var(--ink);transform:scale(1.1)}
+  @media(max-width:800px){.layout,.wb-layout{grid-template-columns:1fr}.sidebar,.wb-sidebar{display:none}}
+
+[data-theme="dark"] body{background:#0d1117;color:#e2e8f0}
+[data-theme="dark"] .panel,[data-theme="dark"] .info-card,[data-theme="dark"] .todo-panel,
+[data-theme="dark"] .pomodoro,[data-theme="dark"] .add-link-bar,
+[data-theme="dark"] .modal-box,[data-theme="dark"] .editor-box{background:#161b22;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .panel-header,[data-theme="dark"] .pom-header,[data-theme="dark"] .panel-title{border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .field input,[data-theme="dark"] .field select,[data-theme="dark"] .field textarea{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .filter-btn,[data-theme="dark"] .task-item,[data-theme="dark"] .trans-item,
+[data-theme="dark"] .file-item,[data-theme="dark"] .file-card,[data-theme="dark"] .todo-item,
+[data-theme="dark"] .event-item,[data-theme="dark"] .goal-item,[data-theme="dark"] .budget-item{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .app-desc,[data-theme="dark"] .trans-meta,[data-theme="dark"] .note-date,
+[data-theme="dark"] .file-meta,[data-theme="dark"] .file-size{color:#8b949e}
+[data-theme="dark"] .drop-zone{background:#161b22;border-color:#30363d}
+[data-theme="dark"] .drop-zone:hover{background:#21262d}
+[data-theme="dark"] .add-task-row input,[data-theme="dark"] .add-task-row select{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] nav{background:#010409}
+
+</style>
+</head>
+<body>
+<nav>
+  <a href="portal.html" class="back">← Dashboard</a>
+  <div class="nav-title">📝 Notes & Whiteboard</div>
+  <button class="btn btn-gold btn-sm" id="navAddBtn" onclick="handleNavAdd()">+ New Note</button>
+<button class="theme-toggle" onclick="EduTheme.toggle()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:7px 14px;border-radius:8px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto">🌙 Dark</button>
+</nav>
+
+<div class="main-tabs">
+  <button class="main-tab active" onclick="switchMainTab('notes',this)" id="tabNotes">📒 Notes Boards</button>
+  <button class="main-tab" onclick="switchMainTab('wb',this)" id="tabWb">🎨 Whiteboards</button>
+</div>
+
+<!-- ═══════════ NOTES TAB ═══════════ -->
+<div class="tab-section active" id="secNotes">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sb-search"><input type="text" id="noteSearch" placeholder="🔍 Search notes..." oninput="searchNotes(this.value)"></div>
+      <div class="sb-header">
+        <span class="sb-title">Boards</span>
+        <button class="sb-add" onclick="openBoardModal()" title="New Board">+</button>
+      </div>
+      <div class="board-list" id="boardList"></div>
+    </div>
+    <div class="notes-content">
+      <div class="notes-toolbar">
+        <span class="board-title-display" id="boardTitleDisplay">Select a Board</span>
+        <div class="view-toggle">
+          <button class="vbtn active" id="vgrid" onclick="setView('grid',this)" title="Grid">⊞</button>
+          <button class="vbtn" id="vlist" onclick="setView('list',this)" title="List">☰</button>
+        </div>
+        <button class="btn btn-dark btn-sm" onclick="openNoteEditor()">+ Note</button>
+      </div>
+      <div class="notes-grid" id="notesContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ WHITEBOARD TAB ═══════════ -->
+<div class="tab-section" id="secWb">
+  <div class="wb-layout">
+    <div class="wb-sidebar">
+      <div class="sb-header">
+        <span class="sb-title">Whiteboards</span>
+        <button class="sb-add" onclick="newWhiteboard()" title="New Whiteboard">+</button>
+      </div>
+      <div class="wb-list" id="wbList"></div>
+    </div>
+    <div class="wb-canvas-area">
+      <div class="wb-toolbar">
+        <span class="wb-board-title" id="wbBoardTitle">Select a Whiteboard</span>
+        <div class="wt-sep"></div>
+        <div class="wt-btn active" id="wtPen" onclick="setWbTool('pen')" title="Pen">✏️</div>
+        <div class="wt-btn" id="wtEraser" onclick="setWbTool('eraser')" title="Eraser">⬜</div>
+        <div class="wt-btn" id="wtLine" onclick="setWbTool('line')" title="Line">╱</div>
+        <div class="wt-btn" id="wtRect" onclick="setWbTool('rect')" title="Rectangle">▭</div>
+        <div class="wt-btn" id="wtCircle" onclick="setWbTool('circle')" title="Circle">○</div>
+        <div class="wt-btn" id="wtText" onclick="setWbTool('text')" title="Text">T</div>
+        <div class="wt-sep"></div>
+        <div class="c-dot active" style="background:#0f0e17" data-c="#0f0e17" onclick="setWbColor('#0f0e17',this)"></div>
+        <div class="c-dot" style="background:#dc2626" data-c="#dc2626" onclick="setWbColor('#dc2626',this)"></div>
+        <div class="c-dot" style="background:#059669" data-c="#059669" onclick="setWbColor('#059669',this)"></div>
+        <div class="c-dot" style="background:#2563eb" data-c="#2563eb" onclick="setWbColor('#2563eb',this)"></div>
+        <div class="c-dot" style="background:#d97706" data-c="#d97706" onclick="setWbColor('#d97706',this)"></div>
+        <div class="c-dot" style="background:#7c3aed" data-c="#7c3aed" onclick="setWbColor('#7c3aed',this)"></div>
+        <div class="c-dot" style="background:#db2777" data-c="#db2777" onclick="setWbColor('#db2777',this)"></div>
+        <div class="wt-sep"></div>
+        <input type="range" class="sz-slider" id="brushSize" min="1" max="30" value="3" title="Brush size">
+        <div class="wt-sep"></div>
+        <div class="wt-btn" onclick="undoWb()" title="Undo">↩</div>
+        <div class="wt-btn" onclick="clearWb()" title="Clear board">🗑</div>
+        <div class="wt-btn" onclick="saveWbImage()" title="Save as PNG">💾</div>
+        <div class="wt-btn" onclick="saveWbData()" title="Save board data">✅</div>
+      </div>
+      <div style="flex:1;overflow:hidden;position:relative">
+        <canvas id="wbCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Board Modal -->
+<div class="modal" id="boardModal">
+  <div class="modal-box">
+    <h3 id="boardModalTitle">New Notes Board</h3>
+    <div class="field"><label>Board Name *</label><input type="text" id="boardName" placeholder="e.g. Biology Notes, Semester 1"></div>
+    <div class="field"><label>Colour</label>
+      <div class="board-color-pick">
+        <div class="bc active" style="background:#4f46e5" data-bc="#4f46e5" onclick="setBoardColor('#4f46e5',this)"></div>
+        <div class="bc" style="background:#059669" data-bc="#059669" onclick="setBoardColor('#059669',this)"></div>
+        <div class="bc" style="background:#d97706" data-bc="#d97706" onclick="setBoardColor('#d97706',this)"></div>
+        <div class="bc" style="background:#dc2626" data-bc="#dc2626" onclick="setBoardColor('#dc2626',this)"></div>
+        <div class="bc" style="background:#7c3aed" data-bc="#7c3aed" onclick="setBoardColor('#7c3aed',this)"></div>
+        <div class="bc" style="background:#0891b2" data-bc="#0891b2" onclick="setBoardColor('#0891b2',this)"></div>
+        <div class="bc" style="background:#db2777" data-bc="#db2777" onclick="setBoardColor('#db2777',this)"></div>
+        <div class="bc" style="background:#0f0e17" data-bc="#0f0e17" onclick="setBoardColor('#0f0e17',this)"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBoardModal()">Cancel</button>
+      <button class="btn btn-dark" onclick="saveBoard()">Create Board</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Editor Modal -->
+<div class="modal" id="noteModal">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="margin:0" id="noteModalTitle">New Note</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeNoteEditor()">✕ Close</button>
+    </div>
+    <input type="hidden" id="editNoteId">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div class="color-pick" id="noteColorPick">
+        <div class="ec active" style="background:#fff;border-color:#ddd" data-ec="#ffffff" onclick="setNoteColor('#ffffff',this)"></div>
+        <div class="ec" style="background:#fef9c3" data-ec="#fef9c3" onclick="setNoteColor('#fef9c3',this)"></div>
+        <div class="ec" style="background:#dcfce7" data-ec="#dcfce7" onclick="setNoteColor('#dcfce7',this)"></div>
+        <div class="ec" style="background:#dbeafe" data-ec="#dbeafe" onclick="setNoteColor('#dbeafe',this)"></div>
+        <div class="ec" style="background:#fce7f3" data-ec="#fce7f3" onclick="setNoteColor('#fce7f3',this)"></div>
+        <div class="ec" style="background:#ede9fe" data-ec="#ede9fe" onclick="setNoteColor('#ede9fe',this)"></div>
+        <div class="ec" style="background:#ffedd5" data-ec="#ffedd5" onclick="setNoteColor('#ffedd5',this)"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;margin-left:auto">
+        <input type="checkbox" id="notePin"> 📌 Pin note
+      </label>
+    </div>
+    <div class="field"><label>Title</label><input type="text" id="noteTitle" placeholder="Note title..."></div>
+    <div class="field"><label>Tags (comma separated)</label><input type="text" id="noteTags" placeholder="e.g. biology, chapter 3, exam prep"></div>
+    <div class="tb-row">
+      <button class="tb" onclick="ins('**','**')" title="Bold"><b>B</b></button>
+      <button class="tb" onclick="ins('_','_')" title="Italic"><i>I</i></button>
+      <button class="tb" onclick="ins('\n- ','')" title="Bullet">•</button>
+      <button class="tb" onclick="ins('\n1. ','')" title="Numbered">1.</button>
+      <button class="tb" onclick="ins('\n[ ] ','')" title="Todo">☐</button>
+      <button class="tb" onclick="ins('\n> ','')" title="Quote">❝</button>
+      <button class="tb" onclick="ins('`','`')" title="Code">{`}</button>
+      <button class="tb" onclick="ins('\n---\n','')" title="Divider">—</button>
+      <span style="margin-left:auto;font-size:11px;color:#aaa" id="charCount">0 chars</span>
+    </div>
+    <div class="field" style="margin-top:4px">
+      <textarea id="noteContent" placeholder="Start writing your note..." oninput="updateChar()"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="noteDelBtn" onclick="deleteCurrentNote()" style="display:none;background:#fde8e9;color:#b91c1c;border:none">🗑 Delete</button>
+      <button class="btn btn-ghost" onclick="closeNoteEditor()">Cancel</button>
+      <button class="btn btn-dark" onclick="saveNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA — stored in localStorage
+// Boards: [{id, name, color}]
+// Notes:  [{id, boardId, title, content, tags, color, pinned, created, updated}]
+// Whiteboards: [{id, name, data (base64 png)}]
+// ═══════════════════════════════════════════════════
+let boards=[], notes=[], whiteboards=[], activeBoardId=null, activeWbId=null;
+let noteView='grid', noteColor='#ffffff', boardColor='#4f46e5';
+
+function loadData(){
+  boards=JSON.parse(localStorage.getItem('en_boards')||'[]');
+  notes=JSON.parse(localStorage.getItem('en_notes')||'[]');
+  whiteboards=JSON.parse(localStorage.getItem('en_wbs')||'[]');
+  // Create default board if none
+  if(!boards.length){ boards=[{id:Date.now(),name:'General Notes',color:'#4f46e5'}]; saveBoards(); }
+  // Create default whiteboard if none
+  if(!whiteboards.length){ whiteboards=[{id:Date.now(),name:'My First Board',data:null}]; saveWbs(); }
+  activeBoardId=boards[0].id;
+  activeWbId=whiteboards[0].id;
+}
+function saveBoards(){ localStorage.setItem('en_boards',JSON.stringify(boards)); }
+function saveNotes(){ localStorage.setItem('en_notes',JSON.stringify(notes)); }
+function saveWbs(){ localStorage.setItem('en_wbs',JSON.stringify(whiteboards)); }
+
+// ── MAIN TAB SWITCHING ──
+function switchMainTab(id,btn){
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('active');
+  btn.classList.add('active');
+  if(id==='wb'){
+    document.getElementById('navAddBtn').textContent='+ New Whiteboard';
+    initCanvas(); renderWbList();
+  } else {
+    document.getElementById('navAddBtn').textContent='+ New Note';
+  }
+}
+
+function handleNavAdd(){
+  const isWb=document.getElementById('secWb').classList.contains('active');
+  if(isWb) newWhiteboard();
+  else openNoteEditor();
+}
+
+// ══════════════════════════════════════════════════
+// BOARDS
+// ══════════════════════════════════════════════════
+function renderBoardList(){
+  const list=document.getElementById('boardList');
+  if(!boards.length){list.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:#bbb">No boards yet</div>';return;}
+  list.innerHTML=boards.map(b=>`
+    <div class="board-item ${b.id===activeBoardId?'active':''}" onclick="selectBoard(${b.id})">
+      <div class="board-dot" style="background:${b.color}"></div>
+      <div class="board-name">${escHtml(b.name)}</div>
+      <div class="board-count">${notes.filter(n=>n.boardId===b.id).length}</div>
+      <button class="board-del" onclick="deleteBoard(event,${b.id})" title="Delete board">×</button>
+    </div>`).join('');
+}
+
+function selectBoard(id){ activeBoardId=id; renderBoardList(); renderNotes(); }
+
+let editBoardId=null;
+function openBoardModal(){ editBoardId=null; document.getElementById('boardName').value=''; setBoardColor('#4f46e5'); document.getElementById('boardModal').classList.add('open'); setTimeout(()=>document.getElementById('boardName').focus(),100); }
+function closeBoardModal(){ document.getElementById('boardModal').classList.remove('open'); }
+function setBoardColor(c,el){ boardColor=c; document.querySelectorAll('.bc').forEach(d=>d.classList.remove('active')); const t=el||document.querySelector(`.bc[data-bc="${c}"]`); if(t)t.classList.add('active'); }
+
+function saveBoard(){
+  const name=document.getElementById('boardName').value.trim();
+  if(!name){alert('Board name required');return;}
+  boards.push({id:Date.now(),name,color:boardColor});
+  saveBoards(); closeBoardModal();
+  activeBoardId=boards[boards.length-1].id;
+  renderBoardList(); renderNotes();
+}
+
+function deleteBoard(e,id){
+  e.stopPropagation();
+  if(!confirm('Delete this board and ALL its notes?'))return;
+  boards=boards.filter(b=>b.id!==id);
+  notes=notes.filter(n=>n.boardId!==id);
+  saveBoards(); saveNotes();
+  activeBoardId=boards.length?boards[0].id:null;
+  renderBoardList(); renderNotes();
+}
+
+// ══════════════════════════════════════════════════
+// NOTES
+// ══════════════════════════════════════════════════
+function renderNotes(searchQ=''){
+  const board=boards.find(b=>b.id===activeBoardId);
+  document.getElementById('boardTitleDisplay').textContent=board?board.name:'Select a Board';
+  let list=notes.filter(n=>n.boardId===activeBoardId);
+  if(searchQ) list=list.filter(n=>(n.title+' '+n.content+' '+n.tags).toLowerCase().includes(searchQ.toLowerCase()));
+  const pinned=list.filter(n=>n.pinned), rest=list.filter(n=>!n.pinned);
+  const sorted=[...pinned,...rest];
+  const cont=document.getElementById('notesContainer');
+  cont.className=noteView==='grid'?'notes-grid':'notes-list-view';
+  if(!sorted.length){
+    cont.innerHTML=`<div class="empty-notes"><div class="icon">📝</div><p>${board?'No notes in this board. Click "+ Note" to start!':'Select a board from the sidebar.'}</p></div>`;
+    return;
+  }
+  cont.innerHTML=sorted.map(n=>{
+    const bg=n.color||'#ffffff'; const dark=!isLight(bg);
+    const tc=dark?'rgba(255,255,255,.85)':'rgba(0,0,0,.8)';
+    const preview=n.content?n.content.replace(/[*_`>#\-\[\]]/g,'').slice(0,120):'';
+    const tags=n.tags?n.tags.split(',').filter(t=>t.trim()).map(t=>`<span class="ntag">${escHtml(t.trim())}</span>`).join(''):'';
+    return `<div class="note-card ${noteView==='list'?'lv':''}" style="background:${bg};color:${tc}" onclick="openNoteEditor(${n.id})">
+      <button class="pin-btn ${n.pinned?'on':''}" onclick="togglePin(event,${n.id})" title="${n.pinned?'Unpin':'Pin'}">📌</button>
+      <div class="note-title">${escHtml(n.title||'Untitled')}</div>
+      ${noteView!=='list'&&preview?`<div class="note-preview">${escHtml(preview)}</div>`:''}
+      <div class="note-footer">
+        <div class="ntags">${tags}</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span class="note-date">${timeSince(n.updated)}</span>
+          <button class="ndel" onclick="quickDelNote(event,${n.id})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function searchNotes(q){ renderNotes(q); }
+function setView(v,btn){ noteView=v; document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderNotes(); }
+
+function openNoteEditor(noteId=null){
+  document.getElementById('editNoteId').value=noteId||'';
+  const delBtn=document.getElementById('noteDelBtn');
+  if(noteId){
+    const n=notes.find(n=>n.id===noteId);
+    if(!n)return;
+    document.getElementById('noteModalTitle').textContent='Edit Note';
+    document.getElementById('noteTitle').value=n.title||'';
+    document.getElementById('noteContent').value=n.content||'';
+    document.getElementById('noteTags').value=n.tags||'';
+    document.getElementById('notePin').checked=!!n.pinned;
+    setNoteColor(n.color||'#ffffff');
+    delBtn.style.display='inline-flex';
+  } else {
+    document.getElementById('noteModalTitle').textContent='New Note';
+    document.getElementById('noteTitle').value=''; document.getElementById('noteContent').value='';
+    document.getElementById('noteTags').value=''; document.getElementById('notePin').checked=false;
+    setNoteColor('#ffffff'); delBtn.style.display='none';
+  }
+  updateChar();
+  document.getElementById('noteModal').classList.add('open');
+  setTimeout(()=>document.getElementById('noteTitle').focus(),100);
+}
+function closeNoteEditor(){ document.getElementById('noteModal').classList.remove('open'); }
+function setNoteColor(c,el){ noteColor=c; document.querySelectorAll('.ec').forEach(d=>d.classList.remove('active')); const t=el||document.querySelector(`.ec[data-ec="${c}"]`); if(t)t.classList.add('active'); document.getElementById('noteModal').querySelector('.modal-box').style.background=c; }
+function updateChar(){ document.getElementById('charCount').textContent=document.getElementById('noteContent').value.length+' chars'; }
+function ins(before,after){ const ta=document.getElementById('noteContent'); const s=ta.selectionStart,e=ta.selectionEnd; ta.value=ta.value.slice(0,s)+before+ta.value.slice(s,e)+after+ta.value.slice(e); ta.selectionStart=s+before.length; ta.selectionEnd=e+before.length; ta.focus(); updateChar(); }
+
+function saveNote(){
+  if(!activeBoardId){alert('Please select or create a board first');return;}
+  const id=document.getElementById('editNoteId').value;
+  const note={
+    id:id?parseInt(id):Date.now(), boardId:activeBoardId,
+    title:document.getElementById('noteTitle').value.trim()||'Untitled',
+    content:document.getElementById('noteContent').value,
+    tags:document.getElementById('noteTags').value,
+    color:noteColor, pinned:document.getElementById('notePin').checked,
+    created:id?notes.find(n=>n.id==id)?.created||Date.now():Date.now(),
+    updated:Date.now()
+  };
+  if(id){ const i=notes.findIndex(n=>n.id==id); notes[i]=note; }
+  else notes.unshift(note);
+  saveNotes(); closeNoteEditor(); renderNotes(); renderBoardList();
+}
+
+function deleteCurrentNote(){ const id=document.getElementById('editNoteId').value; if(!id||!confirm('Delete this note?'))return; notes=notes.filter(n=>n.id!=id); saveNotes(); closeNoteEditor(); renderNotes(); renderBoardList(); }
+function quickDelNote(e,id){ e.stopPropagation(); if(!confirm('Delete?'))return; notes=notes.filter(n=>n.id!==id); saveNotes(); renderNotes(); renderBoardList(); }
+function togglePin(e,id){ e.stopPropagation(); const n=notes.find(n=>n.id===id); if(n){n.pinned=!n.pinned;n.updated=Date.now();saveNotes();renderNotes();} }
+
+// ══════════════════════════════════════════════════
+// WHITEBOARDS
+// ══════════════════════════════════════════════════
+let wbTool='pen', wbColor='#0f0e17', wbDrawing=false, wbLast=null, wbStart=null, wbSnap=null, wbHistory=[], wbCanvas, wbCtx;
+
+function initCanvas(){
+  wbCanvas=document.getElementById('wbCanvas');
+  wbCtx=wbCanvas.getContext('2d');
+  resizeCanvas();
+  loadActiveWb();
+}
+
+function resizeCanvas(){
+  if(!wbCanvas)return;
+  const parent=wbCanvas.parentElement;
+  const imgData=wbCtx?wbCtx.getImageData(0,0,wbCanvas.width,wbCanvas.height):null;
+  wbCanvas.width=parent.clientWidth;
+  wbCanvas.height=parent.clientHeight||500;
+  wbCtx.fillStyle='#fafaf8'; wbCtx.fillRect(0,0,wbCanvas.width,wbCanvas.height);
+  if(imgData) wbCtx.putImageData(imgData,0,0);
+}
+window.addEventListener('resize',()=>{ if(wbCanvas) resizeCanvas(); });
+
+function renderWbList(){
+  const list=document.getElementById('wbList');
+  if(!whiteboards.length){list.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:#bbb">No whiteboards yet</div>';return;}
+  list.innerHTML=whiteboards.map(w=>`
+    <div class="wb-item ${w.id===activeWbId?'active':''}" onclick="selectWb(${w.id})">
+      <div class="wb-item-icon">🎨</div>
+      <div class="wb-item-name">${escHtml(w.name)}</div>
+      <button class="wb-del" onclick="deleteWb(event,${w.id})">×</button>
+    </div>`).join('');
+}
+
+function selectWb(id){
+  saveCurrentWb();
+  activeWbId=id; renderWbList();
+  const wb=whiteboards.find(w=>w.id===id);
+  document.getElementById('wbBoardTitle').textContent=wb?wb.name:'Whiteboard';
+  loadActiveWb();
+}
+
+function loadActiveWb(){
+  if(!wbCtx||!wbCanvas)return;
+  wbCtx.fillStyle='#fafaf8'; wbCtx.fillRect(0,0,wbCanvas.width,wbCanvas.height);
+  const wb=whiteboards.find(w=>w.id===activeWbId);
+  document.getElementById('wbBoardTitle').textContent=wb?wb.name:'Select a Whiteboard';
+  if(wb?.data){
+    const img=new Image(); img.onload=()=>wbCtx.drawImage(img,0,0); img.src=wb.data;
+  }
+  wbHistory=[];
+}
+
+function saveCurrentWb(){
+  if(!wbCanvas||!activeWbId)return;
+  const wb=whiteboards.find(w=>w.id===activeWbId);
+  if(wb) wb.data=wbCanvas.toDataURL('image/png');
+  saveWbs();
+}
+
+function saveWbData(){
+  saveCurrentWb();
+  const btn=document.querySelector('.wt-btn[onclick="saveWbData()"]');
+  if(btn){btn.textContent='✅ Saved!';setTimeout(()=>btn.textContent='✅',1500);}
+}
+
+function newWhiteboard(){
+  const name=prompt('Whiteboard name:','New Whiteboard');
+  if(!name)return;
+  saveCurrentWb();
+  const wb={id:Date.now(),name:name.trim(),data:null};
+  whiteboards.push(wb); saveWbs();
+  activeWbId=wb.id;
+  renderWbList();
+  if(wbCtx){wbCtx.fillStyle='#fafaf8';wbCtx.fillRect(0,0,wbCanvas.width,wbCanvas.height);}
+  document.getElementById('wbBoardTitle').textContent=wb.name;
+  wbHistory=[];
+}
+
+function deleteWb(e,id){
+  e.stopPropagation();
+  if(whiteboards.length<=1){alert('You must keep at least one whiteboard.');return;}
+  if(!confirm('Delete this whiteboard? This cannot be undone.'))return;
+  whiteboards=whiteboards.filter(w=>w.id!==id);
+  saveWbs();
+  activeWbId=whiteboards[0].id;
+  renderWbList(); loadActiveWb();
+}
+
+// Canvas drawing
+function getPos(e){
+  const r=wbCanvas.getBoundingClientRect();
+  const cx=e.touches?e.touches[0].clientX:e.clientX;
+  const cy=e.touches?e.touches[0].clientY:e.clientY;
+  return{x:(cx-r.left)*(wbCanvas.width/r.width),y:(cy-r.top)*(wbCanvas.height/r.height)};
+}
+function addHistory(){ wbHistory.push(wbCtx.getImageData(0,0,wbCanvas.width,wbCanvas.height)); if(wbHistory.length>40)wbHistory.shift(); }
+function undoWb(){ if(wbHistory.length){wbCtx.putImageData(wbHistory.pop(),0,0);} }
+
+function initCanvasEvents(){
+  if(!wbCanvas)return;
+  wbCanvas.addEventListener('mousedown',startD); wbCanvas.addEventListener('touchstart',startD,{passive:false});
+  wbCanvas.addEventListener('mousemove',moveD); wbCanvas.addEventListener('touchmove',moveD,{passive:false});
+  wbCanvas.addEventListener('mouseup',endD); wbCanvas.addEventListener('touchend',endD);
+  wbCanvas.addEventListener('mouseleave',endD);
+}
+
+function startD(e){
+  e.preventDefault(); if(!activeWbId)return;
+  addHistory(); wbDrawing=true;
+  const p=getPos(e); wbLast=p; wbStart=p;
+  wbSnap=wbCtx.getImageData(0,0,wbCanvas.width,wbCanvas.height);
+  if(wbTool==='text'){
+    const txt=prompt('Enter text:'); wbDrawing=false;
+    if(!txt)return;
+    wbCtx.font=`${parseInt(document.getElementById('brushSize').value)*4+10}px DM Sans`;
+    wbCtx.fillStyle=wbColor; wbCtx.fillText(txt,p.x,p.y);
+  }
+}
+function moveD(e){
+  e.preventDefault(); if(!wbDrawing)return;
+  const p=getPos(e);
+  const sz=parseInt(document.getElementById('brushSize').value);
+  if(wbTool==='pen'||wbTool==='eraser'){
+    wbCtx.beginPath(); wbCtx.moveTo(wbLast.x,wbLast.y); wbCtx.lineTo(p.x,p.y);
+    wbCtx.strokeStyle=wbTool==='eraser'?'#fafaf8':wbColor;
+    wbCtx.lineWidth=wbTool==='eraser'?sz*4:sz; wbCtx.lineCap='round'; wbCtx.lineJoin='round'; wbCtx.stroke(); wbLast=p;
+  } else if(wbSnap){
+    wbCtx.putImageData(wbSnap,0,0); wbCtx.strokeStyle=wbColor; wbCtx.lineWidth=sz;
+    if(wbTool==='line'){wbCtx.beginPath();wbCtx.moveTo(wbStart.x,wbStart.y);wbCtx.lineTo(p.x,p.y);wbCtx.stroke();}
+    else if(wbTool==='rect'){wbCtx.strokeRect(wbStart.x,wbStart.y,p.x-wbStart.x,p.y-wbStart.y);}
+    else if(wbTool==='circle'){const rx=Math.abs(p.x-wbStart.x)/2,ry=Math.abs(p.y-wbStart.y)/2,cx=Math.min(wbStart.x,p.x)+rx,cy=Math.min(wbStart.y,p.y)+ry;wbCtx.beginPath();wbCtx.ellipse(cx,cy,rx,ry,0,0,2*Math.PI);wbCtx.stroke();}
+  }
+}
+function endD(){ if(wbDrawing){wbDrawing=false;} }
+
+function setWbTool(t){ wbTool=t; document.querySelectorAll('.wt-btn[id^="wt"]').forEach(b=>b.classList.remove('active')); const el=document.getElementById('wt'+t.charAt(0).toUpperCase()+t.slice(1)); if(el)el.classList.add('active'); wbCanvas.style.cursor=t==='eraser'?'cell':t==='text'?'text':'crosshair'; }
+function setWbColor(c,el){ wbColor=c; document.querySelectorAll('.c-dot').forEach(d=>d.classList.remove('active')); el.classList.add('active'); }
+function clearWb(){ if(!confirm('Clear this whiteboard?'))return; addHistory(); wbCtx.fillStyle='#fafaf8'; wbCtx.fillRect(0,0,wbCanvas.width,wbCanvas.height); }
+function saveWbImage(){ const a=document.createElement('a'); a.download=(whiteboards.find(w=>w.id===activeWbId)?.name||'whiteboard').replace(/\s+/g,'_')+'.png'; a.href=wbCanvas.toDataURL(); a.click(); }
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function isLight(hex){ const c=(hex||'#fff').replace('#',''); const r=parseInt(c.substr(0,2)||'ff',16),g=parseInt(c.substr(2,2)||'ff',16),b=parseInt(c.substr(4,2)||'ff',16); return(0.299*r+0.587*g+0.114*b)/255>0.58; }
+function timeSince(ts){ if(!ts)return''; const d=new Date(ts),now=new Date(),diff=Math.floor((now-d)/1000); if(diff<60)return'just now'; if(diff<3600)return Math.floor(diff/60)+'m ago'; if(diff<86400)return Math.floor(diff/3600)+'h ago'; return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+function escHtml(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
+
+// Modal backdrop close
+document.getElementById('boardModal').addEventListener('click',e=>{if(e.target.id==='boardModal')closeBoardModal();});
+document.getElementById('noteModal').addEventListener('click',e=>{if(e.target.id==='noteModal')closeNoteEditor();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeBoardModal();closeNoteEditor();}});
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  loadData();
+  renderBoardList();
+  renderNotes();
+  renderWbList();
+  // Defer canvas init until whiteboard tab is opened
+  document.getElementById('wbCanvas').addEventListener('mousedown',()=>{},{once:true});
+});
+
+// Initialize canvas events after DOM is ready
+setTimeout(()=>{ wbCanvas=document.getElementById('wbCanvas'); wbCtx=wbCanvas.getContext('2d'); initCanvasEvents(); },100);
+</script>
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

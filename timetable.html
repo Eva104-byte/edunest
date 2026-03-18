@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Timetable</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f0e17;--bg:#f5f3ef;--card:#fff;--border:#e8e4db;--gold:#e8b84b;--sage:#3d6b5e;--muted:#888;}
+[data-theme="dark"]{--ink:#e2e8f0;--bg:#0d1117;--card:#161b22;--border:#30363d;--muted:#8b949e;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;transition:background .3s,color .3s}
+
+nav{background:#0f0e17;padding:0 32px;display:flex;align-items:center;gap:14px;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.back{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;padding:8px 12px;border-radius:8px;transition:.2s}
+.back:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:white;margin-right:auto}
+.btn{padding:9px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;border:none;display:inline-flex;align-items:center;gap:6px}
+.btn-dark{background:white;color:#0f0e17} .btn-dark:hover{background:#f0f0f0}
+.btn-ghost{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white} .btn-ghost:hover{background:rgba(255,255,255,.2)}
+.theme-toggle{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+
+/* Next class banner */
+.next-class-bar{background:linear-gradient(135deg,#1e3a5f,#1a2744);padding:16px 32px;color:white;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.nc-inner{max-width:1400px;margin:0 auto;width:100%;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.nc-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.5)}
+.nc-class{font-size:18px;font-weight:700}
+.nc-detail{font-size:13px;color:rgba(255,255,255,.6)}
+.nc-countdown{font-family:'DM Mono',monospace;font-size:22px;font-weight:400;color:var(--gold);margin-left:auto}
+.nc-none{font-size:14px;color:rgba(255,255,255,.45);font-style:italic}
+
+/* Main grid */
+.main{max-width:1400px;margin:0 auto;padding:28px 32px}
+
+/* Day headers */
+.timetable-wrap{background:var(--card);border-radius:18px;border:1.5px solid var(--border);overflow:hidden;transition:background .3s,border .3s}
+.tt-header{display:grid;grid-template-columns:80px repeat(5,1fr);background:var(--bg);border-bottom:1.5px solid var(--border)}
+.tt-day-hdr{padding:14px 12px;text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.tt-day-hdr.today{color:var(--sage);background:rgba(61,107,94,.06);border-bottom:2px solid var(--sage)}
+.tt-time-hdr{padding:14px 8px;text-align:right;font-size:11px;color:transparent}
+
+/* Timetable grid */
+.tt-body{display:grid;grid-template-columns:80px repeat(5,1fr);position:relative}
+.tt-time-col{display:flex;flex-direction:column}
+.tt-time-slot{height:60px;border-bottom:1px solid var(--border);padding:4px 8px 0 0;text-align:right;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0}
+.tt-day-col{position:relative;border-left:1px solid var(--border);border-bottom:1px solid var(--border)}
+.tt-slot{height:60px;border-bottom:1px solid rgba(0,0,0,.04);transition:.15s}
+.tt-slot:hover{background:rgba(61,107,94,.04);cursor:pointer}
+.tt-slot:hover::after{content:'+ Add';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:700;color:var(--sage);opacity:.6;pointer-events:none}
+
+/* Class blocks */
+.class-block{position:absolute;left:4px;right:4px;border-radius:8px;padding:6px 8px;cursor:pointer;overflow:hidden;z-index:2;transition:transform .15s,box-shadow .15s;border-left:3px solid transparent}
+.class-block:hover{transform:scale(1.02);box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:10}
+.cb-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.cb-room{font-size:10px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-time{font-size:10px;opacity:.6;font-family:'DM Mono',monospace}
+.today-line{position:absolute;left:0;right:0;height:2px;background:#ef4444;z-index:5;pointer-events:none}
+.today-line::before{content:'';position:absolute;left:-4px;top:-4px;width:10px;height:10px;border-radius:50%;background:#ef4444}
+
+/* Sidebar */
+.layout{display:grid;grid-template-columns:1fr 300px;gap:24px}
+.sidebar{display:flex;flex-direction:column;gap:18px}
+.panel{background:var(--card);border-radius:16px;border:1.5px solid var(--border);overflow:hidden;transition:background .3s,border .3s}
+.panel-hdr{padding:16px 20px;border-bottom:1.5px solid var(--border);font-family:'Playfair Display',serif;font-size:16px;font-weight:700}
+.panel-body{padding:16px 20px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.field input,.field select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--card);outline:none;transition:.2s}
+.field input:focus,.field select:focus{border-color:var(--ink)}
+.color-row{display:flex;gap:6px;flex-wrap:wrap}
+.cl{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:.2s}
+.cl:hover,.cl.active{border-color:var(--ink);transform:scale(1.15)}
+.btn-full{width:100%;padding:11px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:.2s;background:var(--ink);color:white}
+.btn-full:hover{background:#2a2930}
+
+/* Class list */
+.class-list-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.class-list-item:last-child{border-bottom:none}
+.cli-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cli-info{flex:1}
+.cli-name{font-weight:700;font-size:13px}
+.cli-meta{font-size:11px;color:var(--muted)}
+.cli-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:3px;border-radius:5px;transition:.2s;flex-shrink:0}
+.cli-del:hover{background:#fde8e9;color:#b91c1c}
+.empty-tt{text-align:center;padding:40px 16px;color:var(--muted);font-size:13px}
+.empty-tt .icon{font-size:36px;margin-bottom:10px;opacity:.5}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stat-sm{background:var(--card);border-radius:12px;border:1.5px solid var(--border);padding:14px;text-align:center;transition:background .3s}
+.stat-sm .sn{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--sage)}
+.stat-sm .sl{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-top:3px}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(15,14,23,.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-box{background:var(--card);border-radius:18px;padding:32px;width:100%;max-width:420px;box-shadow:0 40px 80px rgba(0,0,0,.25)}
+.modal-box h3{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:20px;color:var(--ink)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.btn-ghost2{padding:10px 18px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-ghost2:hover{border-color:var(--ink)}
+.btn-del{padding:10px 18px;border-radius:10px;border:none;background:#fde8e9;color:#b91c1c;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-del:hover{background:#fca5a5}
+
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{display:none}}
+@media(max-width:700px){.main{padding:16px}.tt-header,.tt-body{grid-template-columns:60px repeat(5,1fr)}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="portal.html" class="back">← Dashboard</a>
+  <div class="nav-title">🗓 Timetable</div>
+  <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑 Clear All</button>
+  <button class="theme-toggle" onclick="EduTheme.toggle()">🌙 Dark</button>
+</nav>
+
+<!-- Next class banner -->
+<div class="next-class-bar">
+  <div class="nc-inner">
+    <div id="nextClassContent">
+      <div class="nc-label">Next Class</div>
+      <div class="nc-none">No upcoming classes today</div>
+    </div>
+    <div class="nc-countdown" id="countdown"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="stats-row">
+    <div class="stat-sm"><div class="sn" id="stTotal">0</div><div class="sl">Classes / week</div></div>
+    <div class="stat-sm"><div class="sn" id="stToday">0</div><div class="sl">Today's classes</div></div>
+    <div class="stat-sm"><div class="sn" id="stHours">0h</div><div class="sl">Weekly hours</div></div>
+  </div>
+
+  <div class="layout">
+    <!-- Timetable -->
+    <div class="timetable-wrap">
+      <div class="tt-header">
+        <div class="tt-time-hdr"></div>
+        <div class="tt-day-hdr" id="dh-0">Mon</div>
+        <div class="tt-day-hdr" id="dh-1">Tue</div>
+        <div class="tt-day-hdr" id="dh-2">Wed</div>
+        <div class="tt-day-hdr" id="dh-3">Thu</div>
+        <div class="tt-day-hdr" id="dh-4">Fri</div>
+      </div>
+      <div class="tt-body" id="ttBody"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-hdr">➕ Add Class</div>
+        <div class="panel-body">
+          <div class="field"><label>Subject / Course *</label><input type="text" id="className" placeholder="e.g. Linear Algebra"></div>
+          <div class="field"><label>Lecturer</label><input type="text" id="classLecturer" placeholder="e.g. Dr. Odhiambo"></div>
+          <div class="field"><label>Room / Location</label><input type="text" id="classRoom" placeholder="e.g. LH 201"></div>
+          <div class="field"><label>Day</label>
+            <select id="classDay"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option></select></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="field"><label>Start Time</label><input type="time" id="classStart" value="08:00"></div>
+            <div class="field"><label>End Time</label><input type="time" id="classEnd" value="10:00"></div>
+          </div>
+          <div class="field"><label>Colour</label>
+            <div class="color-row" id="classColorPicker">
+              <div class="cl active" style="background:#3b82f6" data-c="#3b82f6" onclick="setColor('#3b82f6',this)"></div>
+              <div class="cl" style="background:#10b981" data-c="#10b981" onclick="setColor('#10b981',this)"></div>
+              <div class="cl" style="background:#f59e0b" data-c="#f59e0b" onclick="setColor('#f59e0b',this)"></div>
+              <div class="cl" style="background:#ef4444" data-c="#ef4444" onclick="setColor('#ef4444',this)"></div>
+              <div class="cl" style="background:#8b5cf6" data-c="#8b5cf6" onclick="setColor('#8b5cf6',this)"></div>
+              <div class="cl" style="background:#ec4899" data-c="#ec4899" onclick="setColor('#ec4899',this)"></div>
+              <div class="cl" style="background:#06b6d4" data-c="#06b6d4" onclick="setColor('#06b6d4',this)"></div>
+              <div class="cl" style="background:#84cc16" data-c="#84cc16" onclick="setColor('#84cc16',this)"></div>
+            </div>
+          </div>
+          <button class="btn-full" onclick="addClass()">Add to Timetable</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr">📚 My Classes</div>
+        <div class="panel-body" id="classList">
+          <div class="empty-tt"><div class="icon">📅</div><p>No classes yet.<br>Add your first class!</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Class detail modal -->
+<div class="modal" id="classModal">
+  <div class="modal-box">
+    <h3 id="modalClassName">Class Details</h3>
+    <div id="modalClassBody"></div>
+    <div class="modal-actions">
+      <button class="btn-del" id="modalDelBtn">🗑 Remove</button>
+      <button class="btn-ghost2" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+<script>
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const HOURS_START=7, HOURS_END=21, TOTAL_HOURS=HOURS_END-HOURS_START;
+const SLOT_H=60; // px per hour
+let classes=JSON.parse(localStorage.getItem('tt_classes')||'[]');
+let selectedColor='#3b82f6', selectedClassId=null;
+
+function save(){ localStorage.setItem('tt_classes',JSON.stringify(classes)); }
+
+function setColor(c,el){ selectedColor=c; document.querySelectorAll('.cl').forEach(d=>d.classList.remove('active')); el.classList.add('active'); }
+
+function addClass(){
+  const name=document.getElementById('className').value.trim();
+  if(!name){alert('Subject name is required');return;}
+  const start=document.getElementById('classStart').value;
+  const end=document.getElementById('classEnd').value;
+  if(start>=end){alert('End time must be after start time');return;}
+  const cls={
+    id:Date.now(),
+    name,
+    lecturer:document.getElementById('classLecturer').value.trim(),
+    room:document.getElementById('classRoom').value.trim(),
+    day:parseInt(document.getElementById('classDay').value),
+    start,end,
+    color:selectedColor
+  };
+  classes.push(cls); save(); render();
+  document.getElementById('className').value='';
+  document.getElementById('classLecturer').value='';
+  document.getElementById('classRoom').value='';
+}
+
+function deleteClass(id){
+  classes=classes.filter(c=>c.id!==id); save(); render(); closeModal();
+}
+
+function clearAll(){ if(!confirm('Clear entire timetable?'))return; classes=[]; save(); render(); }
+
+function toMins(t){ const[h,m]=t.split(':').map(Number); return h*60+m; }
+function fromMins(m){ return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+
+function render(){
+  renderGrid();
+  renderClassList();
+  renderStats();
+  updateNextClass();
+  markToday();
+}
+
+function renderGrid(){
+  const body=document.getElementById('ttBody');
+  // Time column
+  let timeCol='<div class="tt-time-col">';
+  for(let h=HOURS_START;h<HOURS_END;h++){
+    timeCol+=`<div class="tt-time-slot">${h}:00</div>`;
+  }
+  timeCol+='</div>';
+
+  // Day columns
+  let dayCols='';
+  for(let d=0;d<5;d++){
+    let slots='';
+    for(let h=0;h<TOTAL_HOURS;h++){
+      slots+=`<div class="tt-slot" onclick="handleSlotClick(${d},${HOURS_START+h})"></div>`;
+    }
+    // Place class blocks
+    const dayClasses=classes.filter(c=>c.day===d);
+    let blocks='';
+    dayClasses.forEach(c=>{
+      const startMins=toMins(c.start)-HOURS_START*60;
+      const endMins=toMins(c.end)-HOURS_START*60;
+      const top=(startMins/60)*SLOT_H;
+      const height=((endMins-startMins)/60)*SLOT_H;
+      const textColor=isLight(c.color)?'#0f0e17':'white';
+      blocks+=`<div class="class-block" style="top:${top}px;height:${height-2}px;background:${c.color}22;border-left-color:${c.color};border-left-width:3px"
+        onclick="showClassDetail(${c.id});event.stopPropagation()">
+        <div class="cb-name" style="color:${c.color};font-weight:800">${esc(c.name)}</div>
+        ${c.room?`<div class="cb-room" style="color:${c.color}">${esc(c.room)}</div>`:''}
+        <div class="cb-time" style="color:${c.color}">${c.start} – ${c.end}</div>
+      </div>`;
+    });
+    dayCols+=`<div class="tt-day-col" style="height:${TOTAL_HOURS*SLOT_H}px;position:relative">${slots}${blocks}</div>`;
+  }
+
+  body.innerHTML=timeCol+dayCols;
+
+  // Today line
+  const now=new Date();
+  const dow=now.getDay(); // 0=Sun
+  if(dow>=1&&dow<=5){
+    const colIdx=dow-1;
+    const col=body.querySelectorAll('.tt-day-col')[colIdx];
+    if(col){
+      const mins=(now.getHours()*60+now.getMinutes())-HOURS_START*60;
+      if(mins>0&&mins<TOTAL_HOURS*60){
+        const top=(mins/60)*SLOT_H;
+        const line=document.createElement('div');
+        line.className='today-line'; line.style.top=top+'px';
+        col.appendChild(line);
+      }
+    }
+  }
+}
+
+function markToday(){
+  const dow=new Date().getDay();
+  for(let i=0;i<5;i++){
+    const hdr=document.getElementById('dh-'+i);
+    if(hdr) hdr.classList.toggle('today',i===dow-1);
+  }
+}
+
+function handleSlotClick(day,hour){
+  document.getElementById('classDay').value=day;
+  document.getElementById('classStart').value=String(hour).padStart(2,'0')+':00';
+  document.getElementById('classEnd').value=String(hour+1).padStart(2,'0')+':00';
+  document.getElementById('className').focus();
+}
+
+function renderClassList(){
+  const el=document.getElementById('classList');
+  if(!classes.length){el.innerHTML='<div class="empty-tt"><div class="icon">📅</div><p>No classes yet.<br>Add your first class!</p></div>';return;}
+  const sorted=[...classes].sort((a,b)=>a.day-b.day||a.start.localeCompare(b.start));
+  el.innerHTML=sorted.map(c=>`<div class="class-list-item">
+    <div class="cli-dot" style="background:${c.color}"></div>
+    <div class="cli-info">
+      <div class="cli-name">${esc(c.name)}</div>
+      <div class="cli-meta">${DAYS[c.day]} · ${c.start}–${c.end}${c.room?' · '+esc(c.room):''}</div>
+    </div>
+    <button class="cli-del" onclick="deleteClass(${c.id})" title="Remove">×</button>
+  </div>`).join('');
+}
+
+function renderStats(){
+  const total=classes.length;
+  const dow=new Date().getDay();
+  const todayClasses=classes.filter(c=>c.day===dow-1).length;
+  const weekMins=classes.reduce((s,c)=>s+toMins(c.end)-toMins(c.start),0);
+  document.getElementById('stTotal').textContent=total;
+  document.getElementById('stToday').textContent=todayClasses;
+  document.getElementById('stHours').textContent=(weekMins/60).toFixed(1)+'h';
+}
+
+function showClassDetail(id){
+  const c=classes.find(c=>c.id===id); if(!c)return;
+  selectedClassId=id;
+  document.getElementById('modalClassName').textContent=c.name;
+  document.getElementById('modalClassBody').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:12px;height:12px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+        <span style="font-size:14px;font-weight:600">${DAYS[c.day]}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:14px;color:var(--muted)">${c.start} – ${c.end}</span>
+      </div>
+      ${c.lecturer?`<div style="font-size:13px;color:var(--muted)">👤 ${esc(c.lecturer)}</div>`:''}
+      ${c.room?`<div style="font-size:13px;color:var(--muted)">📍 ${esc(c.room)}</div>`:''}
+    </div>`;
+  document.getElementById('modalDelBtn').onclick=()=>deleteClass(id);
+  document.getElementById('classModal').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('classModal').classList.remove('open'); }
+
+function updateNextClass(){
+  const now=new Date();
+  const dow=now.getDay();
+  const curMins=now.getHours()*60+now.getMinutes();
+  const content=document.getElementById('nextClassContent');
+  const countdown=document.getElementById('countdown');
+  if(dow===0||dow===6){content.innerHTML='<div class="nc-label">Next Class</div><div class="nc-none">Weekend — enjoy your break! 🎉</div>';countdown.textContent='';return;}
+  const todayClasses=classes.filter(c=>c.day===dow-1).sort((a,b)=>a.start.localeCompare(b.start));
+  const upcoming=todayClasses.find(c=>toMins(c.end)>curMins);
+  if(!upcoming){content.innerHTML='<div class="nc-label">Next Class</div><div class="nc-none">No more classes today</div>';countdown.textContent='';return;}
+  const startMins=toMins(upcoming.start);
+  const isNow=curMins>=startMins&&curMins<toMins(upcoming.end);
+  const diff=isNow?toMins(upcoming.end)-curMins:startMins-curMins;
+  const h=Math.floor(diff/60), m=diff%60;
+  content.innerHTML=`<div class="nc-label">${isNow?'Now in Session':'Up Next'}</div>
+    <div class="nc-class">${esc(upcoming.name)}</div>
+    <div class="nc-detail">${upcoming.start}–${upcoming.end}${upcoming.room?' · '+esc(upcoming.room):''}${upcoming.lecturer?' · '+esc(upcoming.lecturer):''}</div>`;
+  countdown.textContent=isNow?`ends in ${h?h+'h ':''}${m}m`:`in ${h?h+'h ':''}${m}m`;
+}
+setInterval(()=>{updateNextClass();markToday();},30000);
+
+function isLight(hex){ const c=(hex||'#fff').replace('#',''); const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16); return(0.299*r+0.587*g+0.114*b)/255>0.58; }
+function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+
+document.getElementById('classModal').addEventListener('click',e=>{if(e.target.id==='classModal')closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+render();
+</script>
+</body>
+</html>

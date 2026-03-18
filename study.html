@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Study Area</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--ink:#0f0e17;--sage:#3d6b5e;--gold:#e8b84b;--border:#e8e4db;--bg:#f0f7f5;--card:#fff}
+  body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh;transition:background .3s,color .3s}
+
+  /* NAV */
+  nav{background:var(--sage);padding:0 32px;display:flex;align-items:center;gap:16px;height:62px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(61,107,94,.3)}
+  .back{color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;transition:.2s}
+  .back:hover{background:rgba(255,255,255,.15);color:white}
+  .nav-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:white;margin-right:auto}
+  .btn{padding:10px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;border:none}
+  .btn-white{background:white;color:var(--sage)} .btn-white:hover{background:#f0fdf4}
+  .btn-sage{background:var(--sage);color:white} .btn-sage:hover{background:#2d5248}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink)} .btn-ghost:hover{border-color:var(--ink)}
+  .btn-sm{padding:7px 14px;font-size:12px}
+
+  /* HERO */
+  .hero-strip{background:linear-gradient(135deg,var(--sage) 0%,#2d5248 100%);padding:28px 40px;color:white}
+  .hero-strip .inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .hero-strip h1{font-family:'Playfair Display',serif;font-size:26px;font-weight:900}
+  .hero-strip p{font-size:13px;color:rgba(255,255,255,.65);margin-top:3px}
+  .hero-tabs{display:flex;gap:8px}
+  .hero-tab{padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:rgba(255,255,255,.7);transition:.2s;font-family:'DM Sans',sans-serif}
+  .hero-tab.active{background:white;color:var(--sage);border-color:white}
+  .hero-tab:hover:not(.active){background:rgba(255,255,255,.15);color:white}
+
+  .main{max-width:1400px;margin:0 auto;padding:24px 32px}
+  .section{display:none} .section.active{display:block}
+
+  /* ══ FILES 3-COLUMN LAYOUT ══ */
+  .files-layout{display:grid;grid-template-columns:220px 1fr 270px;gap:18px;align-items:start}
+
+  /* ── FOLDER SIDEBAR ── */
+  .folder-sidebar{background:var(--card);border-radius:16px;border:1.5px solid var(--border);overflow:hidden;position:sticky;top:80px}
+  .fs-hdr{padding:13px 15px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .fs-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700}
+  .fs-add-btn{padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--sage);background:transparent;color:var(--sage);transition:.2s;font-family:'DM Sans',sans-serif}
+  .fs-add-btn:hover{background:var(--sage);color:white}
+  .folder-tree{padding:5px 0;max-height:calc(100vh - 200px);overflow-y:auto}
+  .ftree-node{}
+  .ftree-row{display:flex;align-items:center;gap:5px;padding:7px 11px;cursor:pointer;transition:.15s;user-select:none}
+  .ftree-row:hover{background:rgba(61,107,94,.07)}
+  .ftree-row.active{background:rgba(61,107,94,.13)}
+  .ftree-row.active .ftree-name{color:var(--sage);font-weight:700}
+  .ftree-toggle{width:13px;font-size:10px;color:#bbb;flex-shrink:0;text-align:center}
+  .ftree-icon{font-size:14px;flex-shrink:0}
+  .ftree-name{font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ftree-cnt{font-size:10px;color:#bbb;background:#f5f3ef;padding:1px 5px;border-radius:8px;flex-shrink:0}
+  .ftree-acts{display:none;gap:1px;flex-shrink:0}
+  .ftree-row:hover .ftree-acts{display:flex}
+  .fta{width:19px;height:19px;border:none;background:transparent;cursor:pointer;border-radius:4px;font-size:10px;display:flex;align-items:center;justify-content:center;transition:.15s;color:#aaa}
+  .fta:hover{background:#fde8e9;color:#b91c1c}
+  .fta.ren:hover{background:#e8f4f1;color:var(--sage)}
+  .fta.add-sub:hover{background:#e8f4f1;color:var(--sage)}
+  .ftree-children{padding-left:16px}
+  .ftree-children.collapsed{display:none}
+  .ftree-input{width:100%;padding:4px 8px;border:1.5px solid var(--sage);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;color:var(--ink);background:white}
+
+  /* ── MAIN FILE PANEL ── */
+  .panel{background:var(--card);border-radius:16px;border:1.5px solid var(--border);overflow:hidden}
+  .panel-header{padding:15px 18px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .panel-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700}
+  .breadcrumb{display:flex;align-items:center;gap:5px;padding:9px 14px;border-bottom:1.5px solid var(--border);flex-wrap:wrap;background:#fafaf8;min-height:40px}
+  .bc-btn{font-size:12px;font-weight:600;color:var(--sage);cursor:pointer;padding:3px 7px;border-radius:6px;transition:.15s;border:none;background:transparent;font-family:'DM Sans',sans-serif}
+  .bc-btn:hover{background:#e8f4f1}
+  .bc-btn.current{color:#999;cursor:default;font-weight:500}
+  .bc-btn.current:hover{background:transparent}
+  .bc-sep{color:#ddd;font-size:11px;user-select:none}
+  .filter-row{display:flex;gap:7px;padding:10px 14px;border-bottom:1.5px solid var(--border);flex-wrap:wrap;align-items:center}
+  .filter-btn{padding:5px 12px;border-radius:17px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:white;transition:.2s;font-family:'DM Sans',sans-serif;color:var(--ink)}
+  .filter-btn.active{background:var(--sage);color:white;border-color:var(--sage)}
+  .search-box{margin-left:auto;padding:5px 11px;border:1.5px solid var(--border);border-radius:17px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:white;outline:none;transition:.2s;width:150px}
+  .search-box:focus{border-color:var(--sage);width:190px}
+  .upload-prog{background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:9px 13px;font-size:12px;display:none;margin:10px 14px 0}
+  .prog-bar{height:4px;background:#dcfce7;border-radius:10px;margin-top:4px;overflow:hidden}
+  .prog-fill{height:100%;background:var(--sage);border-radius:10px;transition:width .3s;width:0%}
+
+  /* File + folder grid */
+  .file-grid{padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
+
+  /* Folder card */
+  .folder-card{border:1.5px solid var(--border);border-radius:13px;overflow:hidden;transition:.25s;background:white;cursor:pointer}
+  .folder-card:hover{border-color:var(--gold);box-shadow:0 6px 18px rgba(232,184,75,.15);transform:translateY(-2px)}
+  .folder-card-body{padding:16px 12px;text-align:center}
+  .folder-card-icon{font-size:34px;margin-bottom:7px;transition:.2s;display:block}
+  .folder-card:hover .folder-card-icon{transform:scale(1.08)}
+  .folder-card-name{font-weight:700;font-size:12px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .folder-card-count{font-size:10px;color:#aaa}
+  .folder-card-acts{padding:6px 10px;border-top:1px solid #f0ece4;display:flex;gap:5px}
+
+  /* File card */
+  .file-card{border:1.5px solid var(--border);border-radius:13px;overflow:hidden;transition:.25s;background:white}
+  .file-card:hover{border-color:#a7d3c8;box-shadow:0 5px 16px rgba(61,107,94,.1)}
+  .file-preview{height:96px;display:flex;align-items:center;justify-content:center;background:#f5f3ef;position:relative;overflow:hidden;cursor:pointer}
+  .file-preview img{width:100%;height:100%;object-fit:cover}
+  .file-preview video{width:100%;height:100%;object-fit:cover}
+  .file-preview .file-type-icon{font-size:36px}
+  .file-preview .play-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:.3s}
+  .file-preview:hover .play-overlay{background:rgba(0,0,0,.35)}
+  .play-circle{width:32px;height:32px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;transition:.3s;padding-left:2px}
+  .file-preview:hover .play-circle{opacity:1}
+  .file-body{padding:8px 10px}
+  .file-name{font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+  .file-meta{font-size:10px;color:#aaa;display:flex;justify-content:space-between}
+  .file-folder-tag{font-size:10px;color:var(--sage);font-weight:600;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .file-actions{padding:6px 10px;border-top:1px solid #f0ece4;display:flex;gap:4px}
+  .fac-btn{flex:1;padding:5px 3px;border-radius:7px;font-size:10px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;text-align:center;text-decoration:none;color:var(--ink);transition:.2s;display:flex;align-items:center;justify-content:center;gap:2px;font-family:'DM Sans',sans-serif}
+  .fac-btn:hover{background:#f0f7f5;border-color:var(--sage)}
+  .fac-btn.del{border-color:#fca5a5;color:#b91c1c}
+  .fac-btn.del:hover{background:#fde8e9}
+  .empty-state{text-align:center;padding:48px 20px;color:#aaa;grid-column:1/-1}
+  .empty-state .icon{font-size:42px;margin-bottom:10px}
+  .empty-state p{font-size:13px}
+
+  /* ── UPLOAD SIDEBAR ── */
+  .drop-zone{border:2px dashed #a7d3c8;border-radius:13px;padding:22px;text-align:center;cursor:pointer;transition:.3s;background:#f0fdf4;margin:14px 14px 0}
+  .drop-zone:hover,.drop-zone.drag-over{border-color:var(--sage);background:#dcfce7}
+  .dz-icon{font-size:28px;margin-bottom:7px}
+  .dz-title{font-weight:700;font-size:13px;margin-bottom:3px;color:var(--ink)}
+  .dz-sub{font-size:11px;color:#666;line-height:1.4}
+  .dz-types{font-size:10px;color:#aaa;margin-top:5px;background:#f5f3ef;padding:3px 9px;border-radius:14px;display:inline-block}
+  .form-body{padding:12px 14px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:10px;font-weight:700;color:#666;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+  .field input,.field select{width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:white;outline:none;transition:.2s}
+  .field input:focus,.field select:focus{border-color:var(--sage);box-shadow:0 0 0 3px rgba(61,107,94,.08)}
+
+  /* ── MOVE MODAL ── */
+  .modal{position:fixed;inset:0;background:rgba(15,14,23,.55);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-box{background:white;border-radius:16px;padding:24px;width:100%;max-width:370px;box-shadow:0 40px 80px rgba(0,0,0,.2);max-height:78vh;overflow-y:auto}
+  .modal-box h3{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:13px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+  .folder-opt{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:9px;cursor:pointer;transition:.15s;border:1.5px solid var(--border);margin-bottom:6px;background:white}
+  .folder-opt:hover{border-color:var(--sage);background:#f0f7f5}
+  .folder-opt.sel{border-color:var(--sage);background:#e8f4f1}
+  .fo-icon{font-size:15px}
+  .fo-name{font-size:12px;font-weight:600;flex:1}
+  .fo-path{font-size:10px;color:#aaa}
+
+  /* ── FILE VIEWER ── */
+  .viewer-modal{position:fixed;inset:0;background:rgba(10,10,18,.92);z-index:1000;display:none;flex-direction:column}
+  .viewer-modal.open{display:flex}
+  .viewer-topbar{width:100%;background:rgba(15,14,23,.97);border-bottom:1px solid rgba(255,255,255,.1);padding:0 20px;height:54px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+  .viewer-topbar .vtitle{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:white;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .vt-btn{padding:7px 15px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);text-decoration:none;display:inline-flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;white-space:nowrap}
+  .vt-btn:hover{background:rgba(255,255,255,.18);color:white}
+  .vt-btn.close-btn{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#fca5a5}
+  .vt-btn.close-btn:hover{background:rgba(239,68,68,.35)}
+  .viewer-stage{flex:1;width:100%;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px}
+  .viewer-stage iframe{width:100%;height:calc(100vh - 86px);border:none;border-radius:8px;background:white}
+  .viewer-stage video{max-width:100%;max-height:calc(100vh - 86px);border-radius:8px;outline:none;background:#000}
+  .viewer-stage img{max-width:100%;max-height:calc(100vh - 86px);object-fit:contain;border-radius:8px}
+  .viewer-unsupported{text-align:center;color:rgba(255,255,255,.6);padding:60px 40px}
+  .viewer-unsupported .u-icon{font-size:50px;margin-bottom:14px}
+  .viewer-unsupported p{font-size:14px;line-height:1.7}
+
+  /* LINKS */
+  .links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin-bottom:28px}
+  .link-card{background:white;border-radius:16px;border:1.5px solid var(--border);padding:20px;transition:.3s;position:relative;overflow:hidden}
+  .link-card:hover{border-color:#a7d3c8;box-shadow:0 8px 28px rgba(61,107,94,.12);transform:translateY(-3px)}
+  .link-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+  .link-favicon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px;background:#f5f3ef}
+  .link-favicon img{width:24px;height:24px;object-fit:contain}
+  .link-name{font-weight:700;font-size:15px;margin-bottom:5px}
+  .link-url{font-size:11px;color:#aaa;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .link-desc{font-size:12px;color:#666;line-height:1.5;margin-bottom:14px}
+  .link-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+  .link-tag{font-size:10px;padding:3px 8px;border-radius:8px;background:#e8f4f1;color:#065f46;font-weight:600}
+  .link-actions{display:flex;gap:8px}
+  .la-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;border:1.5px solid var(--border);background:white;color:var(--ink);transition:.2s;display:inline-flex;align-items:center;gap:5px}
+  .la-btn.primary{background:var(--sage);color:white;border-color:var(--sage)}
+  .la-btn.primary:hover{background:#2d5248}
+  .la-btn:hover{border-color:var(--sage)}
+  .la-btn.del{border-color:#fca5a5;color:#b91c1c}
+  .la-btn.del:hover{background:#fde8e9}
+
+  /* CURATED */
+  .curated-section{margin-bottom:28px}
+  .curated-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:6px}
+  .curated-sub{font-size:13px;color:#888;margin-bottom:20px}
+  .resource-cats{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .res-cat-btn{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;transition:.2s;font-family:'DM Sans',sans-serif}
+  .res-cat-btn.active{background:var(--sage);color:white;border-color:var(--sage)}
+  .curated-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .curated-card{background:white;border-radius:14px;border:1.5px solid var(--border);padding:16px;cursor:pointer;transition:.25s;text-decoration:none;display:block}
+  .curated-card:hover{border-color:#a7d3c8;transform:translateY(-2px);box-shadow:0 6px 20px rgba(61,107,94,.1)}
+  .cc-icon{font-size:28px;margin-bottom:10px}
+  .cc-name{font-weight:700;font-size:14px;margin-bottom:4px;color:var(--ink)}
+  .cc-desc{font-size:11px;color:#888;line-height:1.4;margin-bottom:8px}
+  .cc-badge{display:inline-block;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .cc-badge.free{background:#dcfce7;color:#166534}
+  .cc-badge.paid{background:#fef9c3;color:#854d0e}
+  .cc-badge.mixed{background:#dbeafe;color:#1e40af}
+  .add-link-bar{background:white;border-radius:16px;border:1.5px solid var(--border);padding:20px 24px;margin-bottom:24px}
+  .add-link-bar h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:16px}
+  .add-link-row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+
+  /* DARK MODE */
+  [data-theme="dark"] body{background:#0d1117;color:#e2e8f0}
+  [data-theme="dark"] .panel,[data-theme="dark"] .folder-sidebar,[data-theme="dark"] .add-link-bar,[data-theme="dark"] .modal-box,[data-theme="dark"] .folder-card,[data-theme="dark"] .file-card,[data-theme="dark"] .link-card,[data-theme="dark"] .curated-card{background:#161b22;border-color:#30363d;color:#e2e8f0}
+  [data-theme="dark"] .panel-header,[data-theme="dark"] .fs-hdr{border-color:#30363d;color:#e2e8f0}
+  [data-theme="dark"] .breadcrumb{background:#0d1117;border-color:#30363d}
+  [data-theme="dark"] .filter-btn,[data-theme="dark"] .fac-btn,[data-theme="dark"] .folder-opt{background:#21262d;border-color:#30363d;color:#e2e8f0}
+  [data-theme="dark"] .field input,[data-theme="dark"] .field select{background:#21262d;border-color:#30363d;color:#e2e8f0}
+  [data-theme="dark"] .drop-zone{background:#161b22;border-color:#30363d}
+  [data-theme="dark"] .drop-zone:hover{background:#21262d}
+  [data-theme="dark"] .ftree-row:hover{background:rgba(255,255,255,.05)}
+  [data-theme="dark"] .ftree-row.active{background:rgba(61,107,94,.2)}
+  [data-theme="dark"] nav{background:#010409}
+  [data-theme="dark"] .file-preview{background:#21262d}
+  [data-theme="dark"] .search-box{background:#21262d;border-color:#30363d;color:#e2e8f0}
+  [data-theme="dark"] .ftree-cnt{background:#21262d;color:#8b949e}
+  [data-theme="dark"] .folder-card-acts .fac-btn{background:#21262d;border-color:#30363d;color:#e2e8f0}
+
+  @media(max-width:1100px){.files-layout{grid-template-columns:1fr 260px}.folder-sidebar{display:none}}
+  @media(max-width:800px){.files-layout{grid-template-columns:1fr}.add-link-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="portal.html" class="back">← Dashboard</a>
+  <div class="nav-title">📚 Study Area</div>
+  <a href="focus.html" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:13px;font-weight:600;padding:8px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);transition:.2s;white-space:nowrap" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">🧘 Focus →</a>
+  <a href="tasks.html" class="btn btn-white btn-sm">📋 Tasks</a>
+  <button class="theme-toggle" onclick="EduTheme.toggle()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer">🌙 Dark</button>
+</nav>
+
+<div class="hero-strip">
+  <div class="inner">
+    <div>
+      <h1>Study Area</h1>
+      <p>Organise your files into folders and subfolders — your personal study library</p>
+    </div>
+    <div class="hero-tabs">
+      <button class="hero-tab active" onclick="showSection('files',this)">📁 My Files</button>
+      <button class="hero-tab" onclick="showSection('links',this)">🔗 Study Links</button>
+      <button class="hero-tab" onclick="showSection('curated',this)">🌐 Resources</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══ FILES SECTION ══ -->
+  <div class="section active" id="secFiles">
+    <div class="files-layout">
+
+      <!-- COL 1: Folder Sidebar -->
+      <div class="folder-sidebar">
+        <div class="fs-hdr">
+          <div class="fs-title">📂 Folders</div>
+          <button class="fs-add-btn" onclick="startNewFolder(null)">+ New</button>
+        </div>
+        <div class="folder-tree" id="folderTree"></div>
+      </div>
+
+      <!-- COL 2: File Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title" id="panelTitle">My Study Files</div>
+          <span style="font-size:12px;color:#888" id="fileCount">0 files</span>
+        </div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="setFileFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setFileFilter('pdf',this)">📄 PDFs</button>
+          <button class="filter-btn" onclick="setFileFilter('image',this)">🖼 Images</button>
+          <button class="filter-btn" onclick="setFileFilter('video',this)">🎬 Videos</button>
+          <input class="search-box" id="fileSearch" placeholder="🔍 Search files…" oninput="renderFiles()">
+        </div>
+        <div class="upload-prog" id="uploadProg">
+          <span id="uploadMsg">Uploading…</span>
+          <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+        </div>
+        <div class="file-grid" id="fileGrid">
+          <div class="empty-state" style="grid-column:1/-1"><div class="icon">📁</div><p>No files yet. Upload your first study material!</p></div>
+        </div>
+      </div>
+
+      <!-- COL 3: Upload Sidebar -->
+      <div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Upload File</div></div>
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <div class="dz-icon">📤</div>
+            <div class="dz-title">Drop or click to upload</div>
+            <div class="dz-sub">PDFs, images, and videos</div>
+            <div class="dz-types">PDF · JPG · PNG · MP4 · WebM · MOV</div>
+          </div>
+          <input type="file" id="fileInput" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.mp4,.webm,.mov,.avi,.mkv">
+          <div class="form-body">
+            <div class="field">
+              <label>Upload to Folder</label>
+              <select id="uploadFolderSelect">
+                <option value="">📂 Uncategorised</option>
+              </select>
+            </div>
+            <button class="btn btn-sage" style="width:100%;font-size:13px;padding:11px" onclick="document.getElementById('fileInput').click()">📂 Browse Files</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LINKS SECTION ══ -->
+  <div class="section" id="secLinks">
+    <div class="add-link-bar">
+      <h3>➕ Add Study Resource Link</h3>
+      <div class="add-link-row">
+        <div class="field" style="margin:0"><label>Site Name</label><input type="text" id="linkName" placeholder="e.g. freeCodeCamp"></div>
+        <div class="field" style="margin:0"><label>URL</label><input type="url" id="linkUrl" placeholder="https://freecodecamp.org"></div>
+        <button class="btn btn-sage" onclick="addLink()" style="white-space:nowrap">Add Link</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="field" style="margin:0"><label>Description (optional)</label><input type="text" id="linkDesc" placeholder="What is it for?"></div>
+        <div class="field" style="margin:0"><label>Tags (comma separated)</label><input type="text" id="linkTags" placeholder="e.g. coding, free, interactive"></div>
+      </div>
+    </div>
+    <div class="links-grid" id="linksGrid">
+      <div class="empty-state" style="grid-column:1/-1"><div class="icon">🔗</div><p>No links saved yet.</p></div>
+    </div>
+  </div>
+
+  <!-- ══ CURATED ══ -->
+  <div class="section" id="secCurated">
+    <div class="curated-section">
+      <div class="curated-title">🌐 Curated Learning Resources</div>
+      <div class="curated-sub">Hand-picked platforms for students — click any card to open in a new tab</div>
+      <div class="resource-cats">
+        <button class="res-cat-btn active" onclick="filterCurated('all',this)">All</button>
+        <button class="res-cat-btn" onclick="filterCurated('coding',this)">💻 Coding</button>
+        <button class="res-cat-btn" onclick="filterCurated('science',this)">🔬 Science & Math</button>
+        <button class="res-cat-btn" onclick="filterCurated('language',this)">📖 Language</button>
+        <button class="res-cat-btn" onclick="filterCurated('general',this)">🎓 General</button>
+        <button class="res-cat-btn" onclick="filterCurated('video',this)">▶ Video Lectures</button>
+      </div>
+      <div class="curated-grid" id="curatedGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Move File Modal -->
+<div class="modal" id="moveModal">
+  <div class="modal-box">
+    <h3>📂 Move File to Folder</h3>
+    <div id="moveOptions"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeMoveModal()">Cancel</button>
+      <button class="btn btn-sage" onclick="confirmMove()">Move Here</button>
+    </div>
+  </div>
+</div>
+
+<!-- File Viewer Modal -->
+<div class="viewer-modal" id="viewerModal">
+  <div class="viewer-topbar">
+    <span class="vtitle" id="viewerTitle">File Viewer</span>
+    <a id="viewerDownload" href="#" download class="vt-btn">⬇ Download</a>
+    <button class="vt-btn close-btn" onclick="closeViewer()">✕ Close</button>
+  </div>
+  <div class="viewer-stage" id="viewerStage"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let files = [], links = [], fileFilter = 'all', curatedFilter = 'all';
+let currentFolderId = null;
+let moveTargetFileId = null, moveSelectedFolderId = null;
+
+const FOLDERS_KEY    = 'studyFolders_v2';
+const FILE_MAP_KEY   = 'studyFileFolders_v2';
+
+function getFolders()     { return JSON.parse(localStorage.getItem(FOLDERS_KEY)  || '[]'); }
+function saveFolders(f)   { localStorage.setItem(FOLDERS_KEY, JSON.stringify(f)); }
+function getFileMap()     { return JSON.parse(localStorage.getItem(FILE_MAP_KEY) || '{}'); }
+function saveFileMap(m)   { localStorage.setItem(FILE_MAP_KEY, JSON.stringify(m)); }
+
+// ── Folder helpers ──────────────────────────────────────────
+function getChildren(pid, folders) {
+  return folders.filter(f => (f.parentId || null) === (pid || null));
+}
+
+function getAllDescendants(id, folders) {
+  const ids = [id];
+  folders.filter(f => f.parentId === id).forEach(c => ids.push(...getAllDescendants(c.id, folders)));
+  return ids;
+}
+
+function flatList(pid, folders, depth = 0) {
+  const out = [];
+  getChildren(pid, folders).forEach(f => {
+    out.push({...f, depth});
+    out.push(...flatList(f.id, folders, depth + 1));
+  });
+  return out;
+}
+
+function getFolderPath(id) {
+  if (!id || id === 'uncat') return [];
+  const folders = getFolders();
+  const path = [];
+  let cur = folders.find(f => f.id === id);
+  while (cur) { path.unshift(cur); cur = cur.parentId ? folders.find(f => f.id === cur.parentId) : null; }
+  return path;
+}
+
+// ══════════════════════════════════════════════════════════
+// FOLDER TREE
+// ══════════════════════════════════════════════════════════
+function renderFolderTree() {
+  const tree = document.getElementById('folderTree');
+  const folders = getFolders();
+  const map = getFileMap();
+
+  const totalFiles = files.length;
+  const uncatCount = files.filter(f => !map[f.id]).length;
+
+  let html = `
+    <div class="ftree-node">
+      <div class="ftree-row ${currentFolderId === null ? 'active' : ''}" onclick="nav(null)">
+        <span class="ftree-toggle"></span>
+        <span class="ftree-icon">🏠</span>
+        <span class="ftree-name">All Files</span>
+        <span class="ftree-cnt">${totalFiles}</span>
+      </div>
+    </div>
+    <div class="ftree-node">
+      <div class="ftree-row ${currentFolderId === 'uncat' ? 'active' : ''}" onclick="nav('uncat')">
+        <span class="ftree-toggle"></span>
+        <span class="ftree-icon">📄</span>
+        <span class="ftree-name">Uncategorised</span>
+        <span class="ftree-cnt">${uncatCount}</span>
+      </div>
+    </div>
+    ${renderLevel(null, folders, map)}
+    <div id="rootNewRow" style="display:none;padding:5px 10px">
+      <input class="ftree-input" id="rootNewInput" placeholder="Folder name…"
+        onkeydown="handleNewKey(event,null)" onblur="cancelNew('root')">
+    </div>`;
+
+  tree.innerHTML = html;
+  updateUploadSelect();
+}
+
+function renderLevel(pid, folders, map) {
+  let html = '';
+  getChildren(pid, folders).forEach(f => {
+    const kids = getChildren(f.id, folders);
+    const hasKids = kids.length > 0;
+    const exp = f.expanded !== false;
+    const ids = getAllDescendants(f.id, folders);
+    const cnt = ids.reduce((s,id) => s + Object.values(map).filter(v => v === id).length, 0);
+    const active = currentFolderId === f.id;
+    html += `<div class="ftree-node" id="fn-${f.id}">
+      <div class="ftree-row ${active ? 'active' : ''}" onclick="nav('${f.id}')">
+        <span class="ftree-toggle" onclick="event.stopPropagation();toggleF('${f.id}')">${hasKids ? (exp?'▾':'▸') : ''}</span>
+        <span class="ftree-icon">${hasKids && exp ? '📂' : '📁'}</span>
+        <span class="ftree-name" id="fn-name-${f.id}">${esc(f.name)}</span>
+        <span class="ftree-cnt">${cnt}</span>
+        <span class="ftree-acts">
+          <button class="fta add-sub" onclick="event.stopPropagation();startSub('${f.id}')" title="New subfolder">+📁</button>
+          <button class="fta ren" onclick="event.stopPropagation();startRen('${f.id}')" title="Rename">✏️</button>
+          <button class="fta" onclick="event.stopPropagation();delFolder('${f.id}')" title="Delete">🗑</button>
+        </span>
+      </div>
+      <div id="fn-ren-${f.id}" style="display:none;padding:3px 10px 3px 30px">
+        <input class="ftree-input" id="fn-inp-${f.id}" value="${escAttr(f.name)}"
+          onkeydown="handleRenKey(event,'${f.id}')" onblur="cancelRen('${f.id}')">
+      </div>
+      <div class="ftree-children ${exp?'':'collapsed'}" id="fn-kids-${f.id}">
+        ${renderLevel(f.id, folders, map)}
+        <div id="sub-new-${f.id}" style="display:none;padding:3px 10px 3px 30px">
+          <input class="ftree-input" id="sub-inp-${f.id}" placeholder="Subfolder name…"
+            onkeydown="handleNewKey(event,'${f.id}')" onblur="cancelNew('sub-${f.id}')">
+        </div>
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+// ── Tree interactions ───────────────────────────────────────
+function nav(id) {
+  currentFolderId = id;
+  fileFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  if(document.getElementById('fileSearch')) document.getElementById('fileSearch').value = '';
+  renderFiles(); renderFolderTree(); renderBreadcrumb();
+}
+
+function toggleF(id) {
+  const folders = getFolders();
+  const f = folders.find(x => x.id === id);
+  if (f) { f.expanded = !f.expanded; saveFolders(folders); renderFolderTree(); }
+}
+
+function renderBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  const pt = document.getElementById('panelTitle');
+  if (currentFolderId === null) {
+    bc.innerHTML = `<button class="bc-btn current">🏠 All Files</button>`;
+    pt.textContent = 'My Study Files';
+  } else if (currentFolderId === 'uncat') {
+    bc.innerHTML = `<button class="bc-btn" onclick="nav(null)">🏠 All Files</button><span class="bc-sep">›</span><button class="bc-btn current">📄 Uncategorised</button>`;
+    pt.textContent = 'Uncategorised';
+  } else {
+    const path = getFolderPath(currentFolderId);
+    let html = `<button class="bc-btn" onclick="nav(null)">🏠 All Files</button>`;
+    path.forEach((f, i) => {
+      html += `<span class="bc-sep">›</span>`;
+      html += i < path.length - 1
+        ? `<button class="bc-btn" onclick="nav('${f.id}')">📁 ${esc(f.name)}</button>`
+        : `<button class="bc-btn current">📂 ${esc(f.name)}</button>`;
+    });
+    bc.innerHTML = html;
+    pt.textContent = path[path.length-1]?.name || 'Files';
+  }
+}
+
+// ── New folder ──────────────────────────────────────────────
+let _newParent = null;
+function startNewFolder(pid) {
+  _newParent = pid;
+  if (pid === null) {
+    const row = document.getElementById('rootNewRow'); if(row){row.style.display='block'; document.getElementById('rootNewInput').focus();}
+  } else {
+    const kids = document.getElementById('fn-kids-'+pid); if(kids) kids.classList.remove('collapsed');
+    const row = document.getElementById('sub-new-'+pid); if(row){row.style.display='block'; document.getElementById('sub-inp-'+pid).focus();}
+  }
+}
+function handleNewKey(e, pid) {
+  if (e.key==='Enter') makeFolder(pid, e.target.value.trim());
+  if (e.key==='Escape') cancelNew(pid===null?'root':'sub-'+pid);
+}
+function makeFolder(pid, name) {
+  if (!name) return;
+  const folders = getFolders();
+  folders.push({id:'f'+Date.now(), name, parentId: pid||null, expanded:true});
+  saveFolders(folders);
+  cancelNew(pid===null?'root':'sub-'+pid);
+  renderFolderTree();
+}
+function cancelNew(key) {
+  if (key==='root') { const r=document.getElementById('rootNewRow'); if(r){r.style.display='none'; document.getElementById('rootNewInput').value='';} }
+  else { const id=key.replace('sub-',''); const r=document.getElementById('sub-new-'+id); if(r) r.style.display='none'; }
+}
+function startSub(pid) { startNewFolder(pid); }
+
+// ── Rename ──────────────────────────────────────────────────
+function startRen(id) {
+  const row=document.getElementById('fn-ren-'+id); if(row){row.style.display='block'; document.getElementById('fn-inp-'+id).focus(); document.getElementById('fn-inp-'+id).select();}
+}
+function handleRenKey(e,id) { if(e.key==='Enter') doRen(id,e.target.value.trim()); if(e.key==='Escape') cancelRen(id); }
+function doRen(id,name) {
+  if(!name){cancelRen(id);return;}
+  const folders=getFolders(); const f=folders.find(x=>x.id===id); if(f){f.name=name; saveFolders(folders);}
+  renderFolderTree(); renderBreadcrumb();
+}
+function cancelRen(id) { const r=document.getElementById('fn-ren-'+id); if(r) r.style.display='none'; }
+
+// ── Delete folder ───────────────────────────────────────────
+function delFolder(id) {
+  const folders=getFolders(); const ids=getAllDescendants(id,folders);
+  const name=folders.find(f=>f.id===id)?.name||'this folder';
+  if(!confirm(`Delete "${name}" and all subfolders? Files will become Uncategorised.`)) return;
+  const map=getFileMap();
+  Object.keys(map).forEach(fid => { if(ids.includes(map[fid])) delete map[fid]; });
+  saveFileMap(map);
+  saveFolders(folders.filter(f=>!ids.includes(f.id)));
+  if(ids.includes(currentFolderId)) currentFolderId=null;
+  renderFolderTree(); renderFiles(); renderBreadcrumb();
+}
+
+// ── Upload folder select ────────────────────────────────────
+function updateUploadSelect() {
+  const sel=document.getElementById('uploadFolderSelect'); if(!sel) return;
+  const flat=flatList(null,getFolders());
+  sel.innerHTML='<option value="">📂 Uncategorised</option>'+
+    flat.map(f=>`<option value="${f.id}">${'　'.repeat(f.depth)}📁 ${esc(f.name)}</option>`).join('');
+  if(currentFolderId && currentFolderId!=='uncat') sel.value=currentFolderId;
+}
+
+// ══════════════════════════════════════════════════════════
+// SAFE FETCH HELPER — never crashes on HTML error responses
+// ══════════════════════════════════════════════════════════
+async function safeJson(response) {
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch(e) {
+    // Server returned HTML instead of JSON — session expired or XAMPP not running
+    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+      console.warn('Server returned HTML instead of JSON. Session may have expired or XAMPP is not running.');
+      return { success: false, message: 'Session expired or server unavailable. Please refresh the page.' };
+    }
+    console.error('Invalid JSON response:', text.slice(0, 200));
+    return { success: false, message: 'Invalid server response. Is XAMPP running?' };
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FILES
+// ══════════════════════════════════════════════════════════
+async function loadFiles() {
+  try {
+    const r = await fetch('tasks_api.php?action=get_files');
+    const d = await safeJson(r);
+    if (d.success) {
+      files = d.files;
+      renderFiles(); renderFolderTree(); renderBreadcrumb();
+    } else if (d.message?.includes('Session expired')) {
+      showServerError(d.message);
+    }
+  } catch(e) {
+    console.error('loadFiles network error:', e);
+    showServerError('Cannot reach XAMPP. Make sure Apache and MySQL are running.');
+  }
+}
+
+function showServerError(msg) {
+  const grid = document.getElementById('fileGrid');
+  if (grid) grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+    <div class="icon">⚠️</div>
+    <p style="color:#b91c1c;font-weight:600">${esc(msg)}</p>
+    <p style="margin-top:8px;font-size:12px;color:#aaa">Check that XAMPP Apache and MySQL are both running,<br>then refresh the page.</p>
+  </div>`;
+}
+
+function setFileFilter(f,btn) {
+  fileFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFiles();
+}
+
+function renderFiles() {
+  const map=getFileMap(), folders=getFolders();
+  const q=(document.getElementById('fileSearch')?.value||'').toLowerCase().trim();
+  let showFiles=files;
+
+  if(q) {
+    showFiles=files.filter(f=>f.original_name.toLowerCase().includes(q));
+  } else if(currentFolderId===null) {
+    // show all
+  } else if(currentFolderId==='uncat') {
+    showFiles=files.filter(f=>!map[f.id]);
+  } else {
+    showFiles=files.filter(f=>map[f.id]===currentFolderId);
+  }
+
+  if(fileFilter!=='all') {
+    showFiles=showFiles.filter(f=>{
+      const t=f.file_type||'';
+      if(fileFilter==='pdf') return t.includes('pdf');
+      if(fileFilter==='image') return t.includes('image');
+      if(fileFilter==='video') return t.includes('video');
+      return true;
+    });
+  }
+
+  document.getElementById('fileCount').textContent=showFiles.length+' file'+(showFiles.length!==1?'s':'');
+
+  // Sub-folders
+  let subFolders=[];
+  if(!q){
+    const pid=currentFolderId===null?null:currentFolderId==='uncat'?'__x__':currentFolderId;
+    if(pid!=='__x__') subFolders=getChildren(pid,folders);
+  }
+
+  const grid=document.getElementById('fileGrid');
+  if(!showFiles.length&&!subFolders.length){
+    const msg=q?`No files matching "<strong>${esc(q)}</strong>"`:
+               currentFolderId==='uncat'?'No uncategorised files':
+               currentFolderId?'This folder is empty — upload a file or move files here':
+               'No files yet. Upload your first study material!';
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="icon">📭</div><p>${msg}</p></div>`;
+    return;
+  }
+
+  // Folder cards
+  let html=subFolders.map(f=>{
+    const ids=getAllDescendants(f.id,folders);
+    const cnt=ids.reduce((s,id)=>s+Object.values(map).filter(v=>v===id).length,0);
+    return `<div class="folder-card" onclick="nav('${f.id}')">
+      <div class="folder-card-body">
+        <span class="folder-card-icon">📁</span>
+        <div class="folder-card-name" title="${escAttr(f.name)}">${esc(f.name)}</div>
+        <div class="folder-card-count">${cnt} file${cnt!==1?'s':''}</div>
+      </div>
+      <div class="folder-card-acts">
+        <button class="fac-btn" onclick="event.stopPropagation();startRen('${f.id}');setTimeout(renderFolderTree,10)" style="font-size:10px">✏️</button>
+        <button class="fac-btn del" onclick="event.stopPropagation();delFolder('${f.id}')" style="font-size:10px">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // File cards
+  html+=showFiles.map(f=>{
+    const isPdf=f.file_type?.includes('pdf'), isImg=f.file_type?.includes('image'), isVid=f.file_type?.includes('video');
+    const sz=f.file_size>1048576?(f.file_size/1048576).toFixed(1)+'MB':(f.file_size/1024|0)+'KB';
+    let prev='';
+    if(isImg) prev=`<img src="${f.url}" alt="${esc(f.original_name)}" loading="lazy">`;
+    else if(isVid) prev=`<video src="${f.url}#t=2" preload="metadata" muted></video><div class="play-overlay"><div class="play-circle">▶</div></div>`;
+    else if(isPdf) prev=`<div class="file-type-icon">📄</div>`;
+    else prev=`<div class="file-type-icon">📁</div>`;
+    const folderName=(currentFolderId===null||q)&&map[f.id]?folders.find(fd=>fd.id===map[f.id])?.name:null;
+    const badge=folderName?`<div class="file-folder-tag">📁 ${esc(folderName)}</div>`:'';
+    return `<div class="file-card">
+      <div class="file-preview" onclick="openViewer('${escJs(f.url)}','${escJs(f.original_name)}','${escJs(f.file_type||'')}')">${prev}</div>
+      <div class="file-body">
+        <div class="file-name" title="${escAttr(f.original_name)}">${esc(f.original_name)}</div>
+        <div class="file-meta"><span>${sz}</span><span>${fmtDate(f.created_at)}</span></div>
+        ${badge}
+      </div>
+      <div class="file-actions">
+        <button class="fac-btn" onclick="openViewer('${escJs(f.url)}','${escJs(f.original_name)}','${escJs(f.file_type||'')}')">👁</button>
+        <button class="fac-btn" onclick="openMove(${f.id})">📂</button>
+        <a href="${f.url}" download="${escAttr(f.original_name)}" class="fac-btn">⬇</a>
+        <button class="fac-btn del" onclick="delFile(${f.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════════
+// MOVE MODAL
+// ══════════════════════════════════════════════════════════
+function openMove(fileId) {
+  moveTargetFileId=fileId;
+  const map=getFileMap(); moveSelectedFolderId=map[fileId]||null;
+  const flat=flatList(null,getFolders());
+  let html=`<div class="folder-opt ${moveSelectedFolderId===null?'sel':''}" onclick="pickMove(null,this)">
+    <span class="fo-icon">📂</span><span class="fo-name">Uncategorised</span><span class="fo-path">Root level</span></div>`;
+  flat.forEach(f=>{
+    html+=`<div class="folder-opt ${moveSelectedFolderId===f.id?'sel':''}" onclick="pickMove('${f.id}',this)">
+      <span class="fo-icon">${'　'.repeat(f.depth)}📁</span><span class="fo-name">${esc(f.name)}</span></div>`;
+  });
+  document.getElementById('moveOptions').innerHTML=html;
+  document.getElementById('moveModal').classList.add('open');
+}
+function pickMove(id,el){
+  moveSelectedFolderId=id;
+  document.querySelectorAll('.folder-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function closeMoveModal(){ document.getElementById('moveModal').classList.remove('open'); moveTargetFileId=null; }
+function confirmMove(){
+  if(moveTargetFileId===null) return;
+  const map=getFileMap();
+  if(!moveSelectedFolderId) delete map[moveTargetFileId]; else map[moveTargetFileId]=moveSelectedFolderId;
+  saveFileMap(map); closeMoveModal(); renderFiles(); renderFolderTree();
+}
+
+// ══════════════════════════════════════════════════════════
+// UPLOAD & DELETE
+// ══════════════════════════════════════════════════════════
+function setupDrop(){
+  const zone=document.getElementById('dropZone'), inp=document.getElementById('fileInput');
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');uploadFiles(e.dataTransfer.files);});
+  inp.addEventListener('change',e=>uploadFiles(e.target.files));
+}
+
+async function uploadFiles(fileList){
+  const prog=document.getElementById('uploadProg'),fill=document.getElementById('progFill'),msg=document.getElementById('uploadMsg');
+  const targetFolder=document.getElementById('uploadFolderSelect').value||null;
+  for(const file of fileList){
+    prog.style.display='block'; msg.textContent='⏳ Uploading: '+file.name; fill.style.width='5%';
+    const fd=new FormData(); fd.append('action','upload_file'); fd.append('file',file);
+    try{
+      let p=5; const iv=setInterval(()=>{p=Math.min(p+Math.random()*12,88);fill.style.width=p+'%';},400);
+      const r=await fetch('tasks_api.php',{method:'POST',body:fd});
+      clearInterval(iv); fill.style.width='100%';
+      const d=await safeJson(r);
+      if(d.success){
+        msg.textContent='✅ '+file.name+' uploaded!';
+        if(targetFolder){const map=getFileMap(); map[d.id]=targetFolder; saveFileMap(map);}
+        await loadFiles();
+      } else msg.textContent='❌ '+(d.message||'Upload failed');
+    }catch(e){msg.textContent='❌ Upload error. Is XAMPP running?';}
+    await new Promise(res=>setTimeout(res,1600));
+  }
+  prog.style.display='none';
+}
+
+async function delFile(id){
+  if(!confirm('Delete this file?')) return;
+  try {
+    const fd=new FormData(); fd.append('action','delete_file'); fd.append('id',id);
+    const r=await fetch('tasks_api.php',{method:'POST',body:fd});
+    const d=await safeJson(r);
+    if(d.success){
+      files=files.filter(f=>f.id!=id);
+      const map=getFileMap(); delete map[id]; saveFileMap(map);
+      renderFiles(); renderFolderTree();
+    } else {
+      alert(d.message||'Delete failed. Is XAMPP running?');
+    }
+  } catch(e) {
+    alert('Cannot reach server. Is XAMPP running?');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FILE VIEWER
+// ══════════════════════════════════════════════════════════
+function openViewer(url,name,type){
+  const stage=document.getElementById('viewerStage');
+  document.getElementById('viewerTitle').textContent=name;
+  const dl=document.getElementById('viewerDownload'); dl.href=url; dl.download=name;
+  if(type.includes('pdf')) stage.innerHTML=`<iframe src="${url}" title="${esc(name)}"></iframe>`;
+  else if(type.includes('image')) stage.innerHTML=`<img src="${url}" alt="${esc(name)}">`;
+  else if(type.includes('video')) stage.innerHTML=`<video src="${url}" controls autoplay playsinline></video>`;
+  else stage.innerHTML=`<div class="viewer-unsupported"><div class="u-icon">📄</div><p><strong>${esc(name)}</strong><br><br>Cannot preview this file type.<br>Use <strong>⬇ Download</strong> to save it.</p></div>`;
+  document.getElementById('viewerModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeViewer(){
+  document.getElementById('viewerModal').classList.remove('open');
+  document.getElementById('viewerStage').innerHTML='';
+  document.body.style.overflow='';
+}
+
+// ══════════════════════════════════════════════════════════
+// LINKS
+// ══════════════════════════════════════════════════════════
+function loadLinks(){ const r=localStorage.getItem('studyLinks'); links=r?JSON.parse(r):[]; renderLinks(); }
+function saveLinks(){ localStorage.setItem('studyLinks',JSON.stringify(links)); }
+function addLink(){
+  const name=document.getElementById('linkName').value.trim(), url=document.getElementById('linkUrl').value.trim();
+  if(!name||!url){alert('Name and URL are required');return;}
+  let u=url; if(!/^https?:\/\//i.test(u)) u='https://'+u;
+  links.unshift({id:Date.now(),name,url:u,desc:document.getElementById('linkDesc').value.trim(),tags:document.getElementById('linkTags').value.trim()});
+  saveLinks(); renderLinks();
+  ['linkName','linkUrl','linkDesc','linkTags'].forEach(id=>document.getElementById(id).value='');
+}
+function deleteLink(id){ if(!confirm('Remove?'))return; links=links.filter(l=>l.id!=id); saveLinks(); renderLinks(); }
+function renderLinks(){
+  const grid=document.getElementById('linksGrid');
+  if(!links.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔗</div><p>No links saved yet. Add your first study resource!</p></div>';return;}
+  grid.innerHTML=links.map(l=>{
+    let fav='🔗'; try{const u=new URL(l.url);fav=`<img src="https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32" onerror="this.style.display='none'">`;}catch(e){}
+    const tags=l.tags?l.tags.split(',').filter(t=>t.trim()).map(t=>`<span class="link-tag">${esc(t.trim())}</span>`).join(''):'';
+    return `<div class="link-card">
+      <div class="link-favicon">${fav}</div>
+      <div class="link-name">${esc(l.name)}</div>
+      <div class="link-url">${esc(l.url)}</div>
+      ${l.desc?`<div class="link-desc">${esc(l.desc)}</div>`:''}
+      ${tags?`<div class="link-tags">${tags}</div>`:''}
+      <div class="link-actions">
+        <a href="${l.url}" target="_blank" class="la-btn primary">🌐 Open Site</a>
+        <button class="la-btn del" onclick="deleteLink(${l.id})">🗑 Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// CURATED
+// ══════════════════════════════════════════════════════════
+const CURATED=[
+  {name:'freeCodeCamp',url:'https://freecodecamp.org',icon:'💻',desc:'Learn web dev, JS, Python — 100% free.',tags:['HTML','CSS','JS'],cat:'coding',free:'free'},
+  {name:'Khan Academy',url:'https://khanacademy.org',icon:'🎓',desc:'Free education in math, science, and more.',tags:['Math','Science'],cat:'science',free:'free'},
+  {name:'Coursera',url:'https://coursera.org',icon:'🏛',desc:'Courses from top universities.',tags:['University','Certificates'],cat:'general',free:'mixed'},
+  {name:'edX',url:'https://edx.org',icon:'📘',desc:'MIT, Harvard and 140+ institutions.',tags:['University','MIT'],cat:'general',free:'mixed'},
+  {name:'MIT OpenCourseWare',url:'https://ocw.mit.edu',icon:'🔭',desc:'Free lecture notes and videos from MIT.',tags:['MIT','Engineering'],cat:'science',free:'free'},
+  {name:'W3Schools',url:'https://w3schools.com',icon:'🌐',desc:'HTML, CSS, JavaScript, SQL reference.',tags:['Web','SQL'],cat:'coding',free:'free'},
+  {name:'MDN Web Docs',url:'https://developer.mozilla.org',icon:'🦊',desc:'The definitive web technology guide.',tags:['Web','APIs'],cat:'coding',free:'free'},
+  {name:'Codecademy',url:'https://codecademy.com',icon:'🐱',desc:'Interactive coding lessons.',tags:['Python','JS'],cat:'coding',free:'mixed'},
+  {name:'YouTube EDU',url:'https://youtube.com/education',icon:'▶',desc:'Educational channels on every subject.',tags:['Video'],cat:'video',free:'free'},
+  {name:'Crash Course',url:'https://thecrashcourse.com',icon:'💥',desc:'Fast-paced educational video series.',tags:['Video','Science'],cat:'video',free:'free'},
+  {name:'3Blue1Brown',url:'https://3blue1brown.com',icon:'🔵',desc:'Visual explanations of math and physics.',tags:['Math','Physics'],cat:'science',free:'free'},
+  {name:'Professor Leonard',url:'https://www.youtube.com/@ProfessorLeonard',icon:'📐',desc:'Full university math courses on YouTube.',tags:['Math','Calculus'],cat:'science',free:'free'},
+  {name:'Duolingo',url:'https://duolingo.com',icon:'🦜',desc:'Gamified language learning.',tags:['Language'],cat:'language',free:'mixed'},
+  {name:'LingQ',url:'https://lingq.com',icon:'📚',desc:'Language learning through real content.',tags:['Language'],cat:'language',free:'mixed'},
+  {name:'LibreTexts',url:'https://libretexts.org',icon:'📖',desc:'Free open-source college textbooks.',tags:['Textbooks','College'],cat:'general',free:'free'},
+  {name:'JSTOR',url:'https://jstor.org',icon:'🏛',desc:'Digital library of academic journals.',tags:['Research'],cat:'general',free:'mixed'},
+  {name:'Google Scholar',url:'https://scholar.google.com',icon:'🔍',desc:'Search academic papers and theses.',tags:['Research'],cat:'general',free:'free'},
+  {name:'Wolfram Alpha',url:'https://wolframalpha.com',icon:'🧮',desc:'Solve math, chemistry, physics problems.',tags:['Math','Science'],cat:'science',free:'mixed'},
+  {name:'GitHub',url:'https://github.com',icon:'🐙',desc:'Code hosting and open source projects.',tags:['Coding','Git'],cat:'coding',free:'free'},
+  {name:'Stack Overflow',url:'https://stackoverflow.com',icon:'🗼',desc:'Q&A community for programmers.',tags:['Coding','Q&A'],cat:'coding',free:'free'},
+];
+function filterCurated(cat,btn){curatedFilter=cat;document.querySelectorAll('.res-cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCurated();}
+function renderCurated(){
+  const list=curatedFilter==='all'?CURATED:CURATED.filter(r=>r.cat===curatedFilter);
+  document.getElementById('curatedGrid').innerHTML=list.map(r=>`
+    <a href="${r.url}" target="_blank" class="curated-card">
+      <div class="cc-icon">${r.icon}</div>
+      <div class="cc-name">${r.name}</div>
+      <div class="cc-desc">${r.desc}</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+        ${r.tags.slice(0,3).map(t=>`<span style="font-size:10px;padding:2px 7px;border-radius:8px;background:#f0f7f5;color:#3d6b5e;font-weight:600">${t}</span>`).join('')}
+      </div>
+      <span class="cc-badge ${r.free}">${r.free==='free'?'Free':r.free==='paid'?'Paid':'Free/Paid'}</span>
+    </a>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILS & INIT
+// ══════════════════════════════════════════════════════════
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.hero-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec'+id[0].toUpperCase()+id.slice(1)).classList.add('active');
+  btn.classList.add('active');
+}
+function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';}
+function escAttr(s){return s?String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'):'';}
+function escJs(s){return s?s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"):''}
+function fmtDate(d){return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
+
+document.getElementById('viewerModal').addEventListener('click',e=>{if(e.target.id==='viewerModal'||e.target.id==='viewerStage')closeViewer();});
+document.getElementById('moveModal').addEventListener('click',e=>{if(e.target.id==='moveModal')closeMoveModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeViewer();closeMoveModal();}});
+
+async function init(){
+  await loadFiles();
+  loadLinks();
+  renderCurated();
+  renderBreadcrumb();
+  setupDrop();
+}
+init();
+</script>
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

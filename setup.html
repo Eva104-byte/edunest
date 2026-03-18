@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Setup Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:#f5f3ef;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{background:white;border-radius:20px;padding:40px;max-width:640px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.1)}
+  h1{font-size:22px;font-weight:700;margin-bottom:4px}
+  .sub{color:#888;font-size:13px;margin-bottom:28px}
+  .check{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-radius:12px;margin-bottom:10px;border:1.5px solid #e8e4db}
+  .icon{font-size:22px;flex-shrink:0;margin-top:1px}
+  .check-title{font-weight:600;font-size:14px;margin-bottom:3px}
+  .check-desc{font-size:12px;color:#666;line-height:1.5}
+  .check.pass{background:#f0fdf4;border-color:#86efac}
+  .check.fail{background:#fef2f2;border-color:#fca5a5}
+  .check.warn{background:#fffbeb;border-color:#fcd34d}
+  .check.pending{background:#f9fafb;border-color:#e5e7eb}
+  .fix-box{background:#1e1e2e;border-radius:12px;padding:16px 18px;margin-top:20px;font-family:monospace;font-size:12px;color:#cdd6f4;line-height:1.8;overflow-x:auto}
+  .fix-box .comment{color:#6c7086}
+  .fix-box .cmd{color:#a6e3a1}
+  .fix-box .path{color:#89dceb}
+  .fix-box .kw{color:#cba6f7}
+  .btn{padding:12px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-block;text-decoration:none;text-align:center}
+  .btn-dark{background:#0f0e17;color:white}
+  .btn-dark:hover{background:#2a2930}
+  .btn-green{background:#059669;color:white}
+  .btn-green:hover{background:#047857}
+  .actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#aaa;margin:20px 0 10px}
+  hr{border:none;border-top:1.5px solid #f0ece4;margin:20px 0}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid #e5e7eb;border-top-color:#6366f1;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .badge.ok{background:#dcfce7;color:#166534}
+  .badge.error{background:#fee2e2;color:#991b1b}
+  .badge.warn{background:#fef9c3;color:#854d0e}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔧 EduNest Setup Checker</h1>
+  <p class="sub">This page diagnoses your XAMPP setup and shows exactly what needs to be fixed.</p>
+
+  <div class="section-title">Checklist</div>
+
+  <div class="check pending" id="chkApache">
+    <div class="icon"><span class="spinner"></span></div>
+    <div><div class="check-title">Apache (PHP) is running</div><div class="check-desc">Checking if this page is served by XAMPP Apache...</div></div>
+  </div>
+
+  <div class="check pending" id="chkPath">
+    <div class="icon">⏳</div>
+    <div><div class="check-title">Files are in the correct folder</div><div class="check-desc" id="chkPathDesc">Checking file path...</div></div>
+  </div>
+
+  <div class="check pending" id="chkDB">
+    <div class="icon">⏳</div>
+    <div><div class="check-title">Database connection works</div><div class="check-desc" id="chkDBDesc">Testing MySQL connection...</div></div>
+  </div>
+
+  <div class="check pending" id="chkTables">
+    <div class="icon">⏳</div>
+    <div><div class="check-title">Database tables exist</div><div class="check-desc" id="chkTablesDesc">Checking if tables are imported...</div></div>
+  </div>
+
+  <div class="check pending" id="chkUploads">
+    <div class="icon">⏳</div>
+    <div><div class="check-title">Uploads folder is writable</div><div class="check-desc" id="chkUploadsDesc">Checking file permissions...</div></div>
+  </div>
+
+  <div id="fixSection" style="display:none">
+    <hr>
+    <div class="section-title">🛠 How to Fix</div>
+    <div id="fixContent"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-dark" onclick="runChecks()">🔄 Re-run Checks</button>
+    <a href="index.html" class="btn btn-green" id="goBtn" style="display:none">✅ Go to EduNest →</a>
+  </div>
+</div>
+
+<script>
+  // Check 1: Apache running — if this JS runs on http://localhost, Apache is up
+  function checkApache() {
+    const el = document.getElementById('chkApache');
+    if (window.location.protocol === 'file:') {
+      el.className = 'check fail';
+      el.innerHTML = `<div class="icon">❌</div><div><div class="check-title">Apache is NOT running <span class="badge error">FAIL</span></div>
+        <div class="check-desc">You opened this file directly (file://) instead of through XAMPP. 
+        You must access it via <strong>http://localhost/student_system/setup.html</strong></div></div>`;
+      return false;
+    }
+    el.className = 'check pass';
+    el.innerHTML = `<div class="icon">✅</div><div><div class="check-title">Apache is running <span class="badge ok">PASS</span></div>
+      <div class="check-desc">Page is served via ${window.location.origin} — Apache is working correctly.</div></div>`;
+    return true;
+  }
+
+  // Check 2: Correct folder path
+  function checkPath() {
+    const el = document.getElementById('chkPath');
+    const path = window.location.pathname;
+    const isCorrect = path.includes('/student_system/');
+    if (!isCorrect) {
+      el.className = 'check fail';
+      el.innerHTML = `<div class="icon">❌</div><div><div class="check-title">Wrong folder path <span class="badge error">FAIL</span></div>
+        <div class="check-desc">Current URL: <strong>${window.location.href}</strong><br>
+        The folder must be named <strong>student_system</strong> and placed inside htdocs.<br>
+        Expected: <strong>http://localhost/student_system/setup.html</strong></div></div>`;
+      return false;
+    }
+    el.className = 'check pass';
+    el.innerHTML = `<div class="icon">✅</div><div><div class="check-title">Files in correct folder <span class="badge ok">PASS</span></div>
+      <div class="check-desc">Path: ${path} — correct!</div></div>`;
+    return true;
+  }
+
+  // Checks 3, 4, 5: PHP-side via API
+  async function checkBackend() {
+    const dbEl = document.getElementById('chkDB');
+    const tablesEl = document.getElementById('chkTables');
+    const uploadsEl = document.getElementById('chkUploads');
+    try {
+      const r = await fetch('check.php');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+
+      // DB connection
+      if (d.db_connected) {
+        dbEl.className = 'check pass';
+        dbEl.innerHTML = `<div class="icon">✅</div><div><div class="check-title">Database connected <span class="badge ok">PASS</span></div>
+          <div class="check-desc">MySQL connected to <strong>student_system</strong> database successfully.</div></div>`;
+      } else {
+        dbEl.className = 'check fail';
+        dbEl.innerHTML = `<div class="icon">❌</div><div><div class="check-title">Database connection failed <span class="badge error">FAIL</span></div>
+          <div class="check-desc"><strong>Error:</strong> ${d.db_error}<br>Fix: Make sure MySQL is started in XAMPP, and the database "student_system" exists in phpMyAdmin.</div></div>`;
+      }
+
+      // Tables
+      if (d.tables_ok) {
+        tablesEl.className = 'check pass';
+        tablesEl.innerHTML = `<div class="icon">✅</div><div><div class="check-title">All tables exist <span class="badge ok">PASS</span></div>
+          <div class="check-desc">Found tables: ${d.tables_found.join(', ')}</div></div>`;
+      } else {
+        tablesEl.className = 'check fail';
+        tablesEl.innerHTML = `<div class="icon">❌</div><div><div class="check-title">Tables missing <span class="badge error">FAIL</span></div>
+          <div class="check-desc">Missing: <strong>${d.tables_missing.join(', ')}</strong><br>
+          Fix: Go to phpMyAdmin → select <em>student_system</em> database → Import → choose <em>database.sql</em></div></div>`;
+      }
+
+      // Uploads
+      if (d.uploads_writable) {
+        uploadsEl.className = 'check pass';
+        uploadsEl.innerHTML = `<div class="icon">✅</div><div><div class="check-title">Uploads folder is writable <span class="badge ok">PASS</span></div>
+          <div class="check-desc">File uploads will work correctly.</div></div>`;
+      } else {
+        uploadsEl.className = 'check warn';
+        uploadsEl.innerHTML = `<div class="icon">⚠️</div><div><div class="check-title">Uploads folder not writable <span class="badge warn">WARNING</span></div>
+          <div class="check-desc">File uploads may fail. On Mac/Linux run: <code>chmod -R 777 uploads/</code> inside the student_system folder.</div></div>`;
+      }
+
+      return d.db_connected && d.tables_ok;
+    } catch(e) {
+      const msg = e.message.includes('Failed to fetch') ? 'Apache stopped — restart it in XAMPP.' : e.message;
+      [dbEl, tablesEl, uploadsEl].forEach(el => {
+        el.className = 'check fail';
+        el.innerHTML = `<div class="icon">❌</div><div><div class="check-title">Could not reach check.php</div>
+          <div class="check-desc">${msg}</div></div>`;
+      });
+      return false;
+    }
+  }
+
+  function showFixes() {
+    const checks = document.querySelectorAll('.check.fail, .check.warn');
+    if (!checks.length) {
+      document.getElementById('goBtn').style.display = 'inline-block';
+      return;
+    }
+    document.getElementById('fixSection').style.display = 'block';
+    document.getElementById('fixContent').innerHTML = `
+      <div class="fix-box">
+        <div class="comment"># ── STEP 1: Start XAMPP services ──────────────────────────────</div>
+        <div>Open <span class="kw">XAMPP Control Panel</span></div>
+        <div>Click <span class="cmd">Start</span> next to <span class="path">Apache</span></div>
+        <div>Click <span class="cmd">Start</span> next to <span class="path">MySQL</span></div>
+        <br>
+        <div class="comment"># ── STEP 2: Copy files to htdocs ──────────────────────────────</div>
+        <div>Windows: <span class="path">C:\\xampp\\htdocs\\student_system\\</span></div>
+        <div>Mac:     <span class="path">/Applications/XAMPP/htdocs/student_system/</span></div>
+        <br>
+        <div class="comment"># ── STEP 3: Import the database ───────────────────────────────</div>
+        <div>Open: <span class="cmd">http://localhost/phpmyadmin</span></div>
+        <div>Click <span class="kw">New</span> → name it <span class="path">student_system</span> → Create</div>
+        <div>Click <span class="kw">Import</span> → choose <span class="path">database.sql</span> → Go</div>
+        <br>
+        <div class="comment"># ── STEP 4: Access the app ────────────────────────────────────</div>
+        <div>Open: <span class="cmd">http://localhost/student_system/index.html</span></div>
+      </div>`;
+  }
+
+  async function runChecks() {
+    document.getElementById('goBtn').style.display = 'none';
+    document.getElementById('fixSection').style.display = 'none';
+    const apacheOk = checkApache();
+    if (!apacheOk) { showFixes(); return; }
+    checkPath();
+    const backendOk = await checkBackend();
+    showFixes();
+    if (apacheOk && backendOk) document.getElementById('goBtn').style.display = 'inline-block';
+  }
+
+  runChecks();
+</script>
+</body>
+</html>

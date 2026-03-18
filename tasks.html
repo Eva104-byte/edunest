@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Task Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--ink:#0f0e17;--cream:#fffcf5;--gold:#e8b84b;--sage:#3d6b5e;--border:#e8e4db;--card:#fff}
+  body{background:#f5f3ef;font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
+  nav{background:var(--ink);padding:0 32px;display:flex;align-items:center;gap:16px;height:60px;position:sticky;top:0;z-index:100}
+  .back{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;
+    padding:8px 12px;border-radius:8px;transition:all .2s}
+  .back:hover{background:rgba(255,255,255,.1);color:white}
+  .nav-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:white;margin-right:auto}
+  .layout{max-width:1300px;margin:0 auto;padding:32px;display:grid;grid-template-columns:1fr 380px;gap:28px}
+  
+  /* LEFT */
+  .panel{background:var(--card);border-radius:18px;border:1.5px solid var(--border);overflow:hidden}
+  .panel-header{padding:24px 28px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
+  .btn{padding:10px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none}
+  .btn-dark{background:var(--ink);color:white}
+  .btn-dark:hover{background:#2a2930;transform:translateY(-1px)}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink)}
+  .btn-danger{background:#fde8e9;color:#b91c1c;border:none}
+  .btn-danger:hover{background:#fca5a5}
+  
+  /* Filter tabs */
+  .filter-bar{padding:16px 28px;display:flex;gap:8px;border-bottom:1.5px solid var(--border);flex-wrap:wrap}
+  .filter-btn{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;
+    border:1.5px solid var(--border);background:white;transition:all .2s}
+  .filter-btn.active{background:var(--ink);color:white;border-color:var(--ink)}
+  
+  /* Task list */
+  .task-list{padding:20px 28px;display:flex;flex-direction:column;gap:12px;min-height:200px}
+  .task-item{border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;
+    transition:all .25s;background:white;cursor:pointer}
+  .task-item:hover{border-color:#c0bdb6;box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+  .task-item.completed{opacity:.6}
+  .task-top{display:flex;align-items:flex-start;gap:12px}
+  .task-check{width:22px;height:22px;border-radius:6px;border:2px solid #d0cdc5;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;margin-top:1px}
+  .task-check.checked{background:var(--sage);border-color:var(--sage);color:white}
+  .task-check:hover{border-color:var(--sage)}
+  .task-content{flex:1}
+  .task-title{font-weight:600;font-size:15px;margin-bottom:4px;transition:all .2s}
+  .task-item.completed .task-title{text-decoration:line-through;color:var(--muted,#888)}
+  .task-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;
+    padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+  .badge.high{background:#fde8e9;color:#b91c1c}
+  .badge.medium{background:#fef9e7;color:#92400e}
+  .badge.low{background:#e8f4f1;color:#065f46}
+  .badge.pending{background:#f5f3ef;color:#666}
+  .badge.in_progress{background:#eaf0fe;color:#3730a3}
+  .badge.completed{background:#e8f4f1;color:#065f46}
+  .task-due{font-size:12px;color:#888}
+  .task-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #f0ece4}
+  .task-btn{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;
+    border:1.5px solid var(--border);background:white;transition:all .2s}
+  .task-btn:hover{background:#f5f3ef}
+  .task-btn.del{border-color:#fca5a5;color:#b91c1c}
+  .task-btn.del:hover{background:#fde8e9}
+  .empty-state{text-align:center;padding:50px 20px;color:#aaa}
+  .empty-state .icon{font-size:48px;margin-bottom:12px}
+  .empty-state p{font-size:14px}
+  
+  /* RIGHT panel */
+  .side-stack{display:flex;flex-direction:column;gap:24px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:11px;font-weight:600;color:#555;letter-spacing:.5px;
+    text-transform:uppercase;margin-bottom:6px}
+  .field input,.field textarea,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);
+    border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);
+    background:white;outline:none;transition:all .2s;resize:vertical}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--ink);
+    box-shadow:0 0 0 3px rgba(15,14,23,0.06)}
+  .field textarea{min-height:80px}
+  .form-body{padding:24px 28px}
+  
+  /* Files */
+  .drop-zone{border:2px dashed #d0cdc5;border-radius:12px;padding:28px;text-align:center;
+    cursor:pointer;transition:all .25s;margin-bottom:18px}
+  .drop-zone:hover,.drop-zone.drag-over{border-color:var(--sage);background:#f0f7f5}
+  .drop-zone .dz-icon{font-size:32px;margin-bottom:8px}
+  .drop-zone p{font-size:13px;color:#777;line-height:1.5}
+  .drop-zone .dz-types{font-size:11px;color:#aaa;margin-top:6px}
+  .file-list{display:flex;flex-direction:column;gap:8px;padding:0 28px 20px}
+  .file-item{display:flex;align-items:center;gap:10px;padding:10px 12px;
+    background:#f9f7f4;border-radius:10px;border:1px solid var(--border)}
+  .file-icon{font-size:20px;flex-shrink:0}
+  .file-info{flex:1;min-width:0}
+  .file-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .file-size{font-size:11px;color:#aaa}
+  .file-del{background:none;border:none;cursor:pointer;color:#b91c1c;font-size:16px;padding:4px;
+    border-radius:6px;transition:all .2s;flex-shrink:0}
+  .file-del:hover{background:#fde8e9}
+  .file-open{color:var(--sage);font-size:16px;cursor:pointer;text-decoration:none;
+    padding:4px;border-radius:6px;transition:all .2s}
+  .file-open:hover{background:#e8f4f1}
+  .upload-progress{background:#e8f4f1;border-radius:8px;padding:8px 12px;font-size:12px;
+    color:#065f46;display:none;margin-bottom:12px}
+  
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(15,14,23,0.5);z-index:1000;
+    display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-box{background:white;border-radius:20px;padding:36px;width:100%;max-width:480px;
+    box-shadow:0 40px 80px rgba(0,0,0,0.2)}
+  .modal-box h3{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px}
+  .modal-box .sub{font-size:13px;color:#888;margin-bottom:24px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+  
+  /* File viewer modal — fullscreen */
+  .viewer-modal{position:fixed;inset:0;background:rgba(10,10,18,.92);z-index:2000;display:none;flex-direction:column}
+  .viewer-modal.open{display:flex}
+  .viewer-topbar{width:100%;background:rgba(15,14,23,.97);border-bottom:1px solid rgba(255,255,255,.1);
+    padding:0 20px;height:54px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .viewer-topbar .vtitle{font-size:14px;font-weight:700;color:white;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .vt-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;
+    border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);
+    text-decoration:none;display:inline-flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;white-space:nowrap}
+  .vt-btn:hover{background:rgba(255,255,255,.18);color:white}
+  .vt-btn.close-btn{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#fca5a5}
+  .vt-btn.close-btn:hover{background:rgba(239,68,68,.35)}
+  .viewer-stage{flex:1;width:100%;overflow:auto;display:flex;align-items:center;justify-content:center;padding:12px}
+  .viewer-stage iframe{width:100%;height:calc(100vh - 78px);border:none;border-radius:8px;background:white}
+  .viewer-stage video{max-width:100%;max-height:calc(100vh - 78px);border-radius:8px;outline:none;background:#000;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .viewer-stage img{max-width:100%;max-height:calc(100vh - 78px);object-fit:contain;border-radius:8px}
+  .viewer-unsupported{text-align:center;color:rgba(255,255,255,.55);padding:60px 30px}
+  .viewer-unsupported .u-icon{font-size:52px;margin-bottom:14px}
+  .viewer-unsupported p{font-size:14px;line-height:1.8}
+  
+  /* Colour labels */
+  .label-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .label-strip{width:4px;border-radius:2px;flex-shrink:0;align-self:stretch;min-height:40px}
+  .color-label-pick{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .cl-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:.2s;flex-shrink:0}
+  .cl-swatch:hover,.cl-swatch.active{border-color:var(--ink);transform:scale(1.15)}
+
+  /* Sub-tasks */
+  .subtask-list{margin-top:10px;padding-top:10px;border-top:1px solid #f0ece4;display:flex;flex-direction:column;gap:6px}
+  .subtask-item{display:flex;align-items:center;gap:8px;font-size:13px}
+  .subtask-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #d0cdc5;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;font-size:9px}
+  .subtask-check.done{background:var(--sage);border-color:var(--sage);color:white}
+  .subtask-text{flex:1;color:#555}
+  .subtask-text.done{text-decoration:line-through;color:#aaa}
+  .subtask-del{background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:2px;transition:.2s}
+  .subtask-del:hover{color:#b91c1c}
+  .add-subtask-row{display:flex;gap:6px;margin-top:6px}
+  .add-subtask-input{flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;
+    font-family:'DM Sans',sans-serif;font-size:12px;outline:none;transition:.2s}
+  .add-subtask-input:focus{border-color:var(--ink)}
+  .add-subtask-btn{padding:6px 12px;border-radius:8px;border:none;background:var(--ink);
+    color:white;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+  .add-subtask-btn:hover{background:#2a2930}
+  .subtask-progress{font-size:11px;color:#aaa;margin-top:4px}
+
+  /* Drag and drop */
+  .task-item{cursor:grab}
+  .task-item:active{cursor:grabbing}
+  .task-item.dragging{opacity:.4;border-style:dashed}
+  .task-item.drag-over{border-color:var(--sage);background:#f0f7f5}
+  
+  /* Sub-tasks in modal */
+  .modal-subtask-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;max-height:150px;overflow-y:auto}
+  .modal-subtask-item{display:flex;align-items:center;gap:8px;padding:5px 8px;background:#f9f7f4;border-radius:8px}
+  .modal-subtask-item input[type="checkbox"]{width:15px;height:15px;accent-color:var(--sage);cursor:pointer}
+  .modal-subtask-item span{flex:1;font-size:13px}
+  .modal-subtask-item span.done{text-decoration:line-through;color:#aaa}
+  .modal-subtask-item button{background:none;border:none;cursor:pointer;color:#ccc;font-size:14px}
+  .modal-subtask-item button:hover{color:#b91c1c}
+
+  @media(max-width:900px){.layout{grid-template-columns:1fr;padding:16px}}
+
+[data-theme="dark"] body{background:#0d1117;color:#e2e8f0}
+[data-theme="dark"] .panel,[data-theme="dark"] .info-card,[data-theme="dark"] .todo-panel,
+[data-theme="dark"] .pomodoro,[data-theme="dark"] .add-link-bar,
+[data-theme="dark"] .modal-box,[data-theme="dark"] .editor-box{background:#161b22;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .panel-header,[data-theme="dark"] .pom-header,[data-theme="dark"] .panel-title{border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .field input,[data-theme="dark"] .field select,[data-theme="dark"] .field textarea{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .filter-btn,[data-theme="dark"] .task-item,[data-theme="dark"] .trans-item,
+[data-theme="dark"] .file-item,[data-theme="dark"] .file-card,[data-theme="dark"] .todo-item,
+[data-theme="dark"] .event-item,[data-theme="dark"] .goal-item,[data-theme="dark"] .budget-item{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .app-desc,[data-theme="dark"] .trans-meta,[data-theme="dark"] .note-date,
+[data-theme="dark"] .file-meta,[data-theme="dark"] .file-size{color:#8b949e}
+[data-theme="dark"] .drop-zone{background:#161b22;border-color:#30363d}
+[data-theme="dark"] .drop-zone:hover{background:#21262d}
+[data-theme="dark"] .add-task-row input,[data-theme="dark"] .add-task-row select{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] nav{background:#010409}
+
+</style>
+</head>
+<body>
+<nav>
+  <a href="portal.html" class="back">← Dashboard</a>
+  <div class="nav-title">📋 Task Manager</div>
+  <a href="study.html" style="color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);transition:.2s;font-weight:600" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">📚 Study Area</a>
+  <button class="btn btn-dark" onclick="openTaskModal()">+ New Task</button>
+<button class="theme-toggle" onclick="EduTheme.toggle()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:7px 14px;border-radius:8px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto">🌙 Dark</button>
+</nav>
+
+<div class="layout">
+  <!-- Task list -->
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">My Tasks</div>
+        </div>
+        <div style="font-size:13px;color:#888" id="taskCount">0 tasks</div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('pending',this)">Pending</button>
+        <button class="filter-btn" onclick="setFilter('in_progress',this)">In Progress</button>
+        <button class="filter-btn" onclick="setFilter('completed',this)">Completed</button>
+        <button class="filter-btn" onclick="setFilter('high',this)">🔴 High Priority</button>
+      </div>
+      <div class="task-list" id="taskList">
+        <div class="empty-state"><div class="icon">📋</div><p>No tasks yet. Create your first task!</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side: Add task + Files -->
+  <div class="side-stack">
+    <!-- Study files -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Study Materials</div>
+        <span style="font-size:12px;color:#888" id="fileCount">0 files</span>
+      </div>
+      <div class="form-body" style="padding-bottom:0">
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="dz-icon">📁</div>
+          <p>Drop files here or <strong>click to browse</strong></p>
+          <div class="dz-types">PDF • Images (JPG/PNG) • Videos (MP4/MOV/WebM)</div>
+        </div>
+        <input type="file" id="fileInput" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.mp4,.webm,.mov,.avi,.mkv">
+        <div class="upload-progress" id="uploadProgress">⏳ Uploading...</div>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal" id="taskModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">New Task</h3>
+    <p class="sub">Fill in the details for your task</p>
+    <input type="hidden" id="editTaskId">
+    <div class="field"><label>Task Title *</label>
+      <input type="text" id="taskTitle" placeholder="What needs to be done?"></div>
+    <div class="field"><label>Description</label>
+      <textarea id="taskDesc" placeholder="Add notes or details..."></textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Priority</label>
+        <select id="taskPriority"><option value="low">🟢 Low</option><option value="medium" selected>🟡 Medium</option><option value="high">🔴 High</option></select></div>
+      <div class="field"><label>Due Date</label>
+        <input type="date" id="taskDue"></div>
+    </div>
+    <div class="field">
+      <label>Colour Label</label>
+      <div class="color-label-pick" id="colorLabelPick">
+        <div class="cl-swatch active" data-color="" style="background:#e8e4db;border-color:#ccc" onclick="setTaskColor('',this)" title="None"></div>
+        <div class="cl-swatch" data-color="#ef4444" style="background:#ef4444" onclick="setTaskColor('#ef4444',this)" title="Red — Urgent"></div>
+        <div class="cl-swatch" data-color="#f59e0b" style="background:#f59e0b" onclick="setTaskColor('#f59e0b',this)" title="Amber — Important"></div>
+        <div class="cl-swatch" data-color="#10b981" style="background:#10b981" onclick="setTaskColor('#10b981',this)" title="Green — Study"></div>
+        <div class="cl-swatch" data-color="#3b82f6" style="background:#3b82f6" onclick="setTaskColor('#3b82f6',this)" title="Blue — Personal"></div>
+        <div class="cl-swatch" data-color="#8b5cf6" style="background:#8b5cf6" onclick="setTaskColor('#8b5cf6',this)" title="Purple — Project"></div>
+        <div class="cl-swatch" data-color="#ec4899" style="background:#ec4899" onclick="setTaskColor('#ec4899',this)" title="Pink — Social"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Sub-tasks</label>
+      <div class="modal-subtask-list" id="modalSubtaskList"></div>
+      <div class="add-subtask-row">
+        <input type="text" class="add-subtask-input" id="newSubtaskInput" placeholder="Add a sub-task…" onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask()}">
+        <button class="add-subtask-btn" onclick="addSubtask()">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeTaskModal()">Cancel</button>
+      <button class="btn btn-dark" onclick="saveTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- File Viewer Modal — fullscreen in-page -->
+<div class="viewer-modal" id="fileViewerModal">
+  <div class="viewer-topbar">
+    <span class="vtitle" id="fileViewerTitle">File Viewer</span>
+    <a id="fileViewerDownload" href="#" download class="vt-btn">⬇ Download</a>
+    <button class="vt-btn close-btn" onclick="closeFileViewer()">✕ Close</button>
+  </div>
+  <div class="viewer-stage" id="fileViewerStage"></div>
+</div>
+
+<script>
+  let tasks = [], files = [], currentFilter = 'all';
+
+  async function init() {
+    await loadTasks();
+    await loadFiles();
+    setupDrop();
+  }
+
+  async function loadTasks() {
+    try {
+      const r = await fetch('tasks_api.php?action=get_tasks');
+      const d = await r.json();
+      if (d.success) { tasks = d.tasks; renderTasks(); }
+    } catch(e) { console.error('Load tasks error:', e); }
+  }
+
+  async function loadFiles() {
+    try {
+      const r = await fetch('tasks_api.php?action=get_files');
+      const d = await r.json();
+      if (d.success) { files = d.files; renderFiles(); }
+    } catch(e) { console.error('Load files error:', e); }
+  }
+
+  // localStorage for colour labels, sub-tasks, and sort order (not stored in DB to keep it simple)
+  let taskMeta = JSON.parse(localStorage.getItem('task_meta')||'{}');
+  function saveMeta(){ localStorage.setItem('task_meta',JSON.stringify(taskMeta)); }
+  let taskColor = '';
+  let editSubtasks = [];
+  let dragSrcId = null;
+
+  function setTaskColor(c,el){
+    taskColor=c;
+    document.querySelectorAll('.cl-swatch').forEach(s=>s.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function addSubtask(){
+    const inp=document.getElementById('newSubtaskInput');
+    const text=inp.value.trim(); if(!text)return;
+    editSubtasks.push({id:Date.now(),text,done:false});
+    renderModalSubtasks(); inp.value=''; inp.focus();
+  }
+
+  function renderModalSubtasks(){
+    const list=document.getElementById('modalSubtaskList');
+    if(!editSubtasks.length){list.innerHTML='';return;}
+    list.innerHTML=editSubtasks.map(s=>`
+      <div class="modal-subtask-item">
+        <input type="checkbox" ${s.done?'checked':''} onchange="toggleModalSubtask(${s.id},this.checked)">
+        <span class="${s.done?'done':''}">${escHtml(s.text)}</span>
+        <button onclick="removeModalSubtask(${s.id})" title="Remove">×</button>
+      </div>`).join('');
+  }
+
+  function toggleModalSubtask(id,done){ const s=editSubtasks.find(s=>s.id===id); if(s){s.done=done;renderModalSubtasks();} }
+  function removeModalSubtask(id){ editSubtasks=editSubtasks.filter(s=>s.id!==id); renderModalSubtasks(); }
+
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTasks();
+  }
+
+  function renderTasks() {
+    const list = document.getElementById('taskList');
+    let filtered = tasks;
+    if (currentFilter !== 'all') {
+      if (['pending','in_progress','completed'].includes(currentFilter))
+        filtered = tasks.filter(t=>t.status===currentFilter);
+      else if (currentFilter === 'high')
+        filtered = tasks.filter(t=>t.priority==='high');
+    }
+    document.getElementById('taskCount').textContent = filtered.length + ' task' + (filtered.length!==1?'s':'');
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>No tasks here!</p></div>';
+      return;
+    }
+    list.innerHTML = filtered.map(t => {
+      const meta = taskMeta[t.id]||{};
+      const color = meta.color||'';
+      const subtasks = meta.subtasks||[];
+      const doneCount = subtasks.filter(s=>s.done).length;
+      const borderStyle = color ? `border-left:4px solid ${color}` : '';
+      const subProg = subtasks.length ? `<div class="subtask-progress">✅ ${doneCount}/${subtasks.length} sub-tasks</div>` : '';
+      const subList = subtasks.length ? `<div class="subtask-list">
+        ${subtasks.map(s=>`<div class="subtask-item">
+          <div class="subtask-check ${s.done?'done':''}" onclick="toggleSubtask(${t.id},${s.id})">${s.done?'✓':''}</div>
+          <span class="subtask-text ${s.done?'done':''}">${escHtml(s.text)}</span>
+        </div>`).join('')}
+        <div class="add-subtask-row">
+          <input class="add-subtask-input" placeholder="Add sub-task…" onkeydown="if(event.key==='Enter'){addInlineSubtask(${t.id},this)}">
+          <button class="add-subtask-btn" onclick="addInlineSubtask(${t.id},this.previousElementSibling)">+</button>
+        </div>
+      </div>` : `<div class="add-subtask-row" style="margin-top:8px">
+        <input class="add-subtask-input" placeholder="+ Add sub-task…" onkeydown="if(event.key==='Enter'){addInlineSubtask(${t.id},this)}">
+        <button class="add-subtask-btn" onclick="addInlineSubtask(${t.id},this.previousElementSibling)">+</button>
+      </div>`;
+      return `<div class="task-item ${t.status==='completed'?'completed':''}" id="task-${t.id}"
+          draggable="true"
+          ondragstart="onDragStart(event,${t.id})" ondragover="onDragOver(event)" ondrop="onDrop(event,${t.id})" ondragleave="onDragLeave(event)"
+          style="${borderStyle}">
+        <div class="task-top">
+          <div class="task-check ${t.status==='completed'?'checked':''}" onclick="toggleTask(${t.id},'${t.status}')">
+            ${t.status==='completed'?'✓':''}
+          </div>
+          <div class="task-content">
+            <div class="task-title">${escHtml(t.title)}</div>
+            ${t.description?`<div style="font-size:12px;color:#888;margin:4px 0">${escHtml(t.description)}</div>`:''}
+            <div class="task-meta">
+              <span class="badge ${t.priority}">${t.priority}</span>
+              <span class="badge ${t.status}">${t.status.replace('_',' ')}</span>
+              ${t.due_date?`<span class="task-due ${isDueWarning(t.due_date)?'style="color:#ef4444;font-weight:700"':''}">📅 ${formatDate(t.due_date)}</span>`:''}
+            </div>
+            ${subProg}
+          </div>
+        </div>
+        ${subList}
+        <div class="task-actions">
+          <button class="task-btn" onclick="editTask(${t.id})">✏️ Edit</button>
+          <button class="task-btn" onclick="setStatus(${t.id},'in_progress')">▶ In Progress</button>
+          <button class="task-btn del" onclick="deleteTask(${t.id})">🗑 Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function isDueWarning(date){
+    const d=new Date(date+'T00:00:00'); const now=new Date();
+    return d<=now;
+  }
+
+  // ── Drag-to-reorder ──
+  function onDragStart(e,id){ dragSrcId=id; e.target.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; }
+  function onDragOver(e){ e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+  function onDragLeave(e){ e.currentTarget.classList.remove('drag-over'); }
+  function onDrop(e,targetId){
+    e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+    if(dragSrcId===targetId)return;
+    const srcIdx=tasks.findIndex(t=>t.id==dragSrcId);
+    const tgtIdx=tasks.findIndex(t=>t.id==targetId);
+    if(srcIdx===-1||tgtIdx===-1)return;
+    const [moved]=tasks.splice(srcIdx,1);
+    tasks.splice(tgtIdx,0,moved);
+    document.querySelectorAll('.task-item').forEach(el=>el.classList.remove('dragging','drag-over'));
+    renderTasks();
+  }
+
+  // ── Sub-task helpers ──
+  function toggleSubtask(taskId,subId){
+    if(!taskMeta[taskId]) taskMeta[taskId]={};
+    if(!taskMeta[taskId].subtasks) taskMeta[taskId].subtasks=[];
+    const s=taskMeta[taskId].subtasks.find(s=>s.id===subId);
+    if(s){s.done=!s.done;saveMeta();renderTasks();}
+  }
+
+  function addInlineSubtask(taskId,input){
+    const text=(input.value||'').trim(); if(!text)return;
+    if(!taskMeta[taskId]) taskMeta[taskId]={};
+    if(!taskMeta[taskId].subtasks) taskMeta[taskId].subtasks=[];
+    taskMeta[taskId].subtasks.push({id:Date.now(),text,done:false});
+    saveMeta(); input.value=''; renderTasks();
+  }
+
+  function renderFiles() {
+    const list = document.getElementById('fileList');
+    document.getElementById('fileCount').textContent = files.length + ' file' + (files.length!==1?'s':'');
+    if (!files.length) { list.innerHTML = ''; return; }
+    list.innerHTML = files.map(f => {
+      const isPdf = f.file_type?.includes('pdf');
+      const isVid = f.file_type?.includes('video');
+      const isImg = f.file_type?.includes('image');
+      const icon = isPdf?'📄':isVid?'🎬':isImg?'🖼':'📁';
+      const size = f.file_size > 1048576 ? (f.file_size/1048576).toFixed(1)+'MB' : (f.file_size/1024).toFixed(0)+'KB';
+      return `<div class="file-item">
+        <div class="file-icon">${icon}</div>
+        <div class="file-info">
+          <div class="file-name">${escHtml(f.original_name)}</div>
+          <div class="file-size">${size}</div>
+        </div>
+        <button class="file-open" onclick="openFileViewer('${escJs(f.url)}','${escJs(f.original_name)}','${escJs(f.file_type||'')}')" title="View file">👁</button>
+        <button class="file-del" onclick="deleteFile(${f.id})">×</button>
+      </div>`;
+    }).join('');
+  }
+
+  function openFileViewer(url, name, type){
+    const stage = document.getElementById('fileViewerStage');
+    document.getElementById('fileViewerTitle').textContent = name;
+    const dl = document.getElementById('fileViewerDownload');
+    dl.href = url; dl.download = name;
+    if(type.includes('pdf')){
+      stage.innerHTML = `<iframe src="${url}" title="${escHtml(name)}"></iframe>`;
+    } else if(type.includes('image')){
+      stage.innerHTML = `<img src="${url}" alt="${escHtml(name)}">`;
+    } else if(type.includes('video')){
+      stage.innerHTML = `<video src="${url}" controls autoplay playsinline></video>`;
+    } else {
+      stage.innerHTML = `<div class="viewer-unsupported">
+        <div class="u-icon">📄</div>
+        <p><strong>${escHtml(name)}</strong><br><br>
+        This file type cannot be previewed here.<br>
+        Click <strong>⬇ Download</strong> to save it to your device.</p>
+      </div>`;
+    }
+    document.getElementById('fileViewerModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFileViewer(){
+    document.getElementById('fileViewerModal').classList.remove('open');
+    document.getElementById('fileViewerStage').innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  async function toggleTask(id, currentStatus) {
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+    await setStatus(id, newStatus);
+  }
+
+  async function setStatus(id, status) {
+    const fd = new FormData();
+    fd.append('action','update_task'); fd.append('id',id); fd.append('status',status);
+    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { const t=tasks.find(t=>t.id==id); if(t) t.status=status; renderTasks(); }
+  }
+
+  function openTaskModal(taskId=null) {
+    document.getElementById('editTaskId').value = taskId||'';
+    editSubtasks = [];
+    if (taskId) {
+      const t = tasks.find(t=>t.id==taskId);
+      const meta = taskMeta[taskId]||{};
+      document.getElementById('modalTitle').textContent='Edit Task';
+      document.getElementById('taskTitle').value=t.title;
+      document.getElementById('taskDesc').value=t.description||'';
+      document.getElementById('taskPriority').value=t.priority;
+      document.getElementById('taskDue').value=t.due_date||'';
+      // Restore colour
+      taskColor=meta.color||'';
+      document.querySelectorAll('.cl-swatch').forEach(s=>{
+        s.classList.toggle('active',s.dataset.color===taskColor);
+      });
+      // Restore subtasks
+      editSubtasks = JSON.parse(JSON.stringify(meta.subtasks||[]));
+    } else {
+      document.getElementById('modalTitle').textContent='New Task';
+      document.getElementById('taskTitle').value='';
+      document.getElementById('taskDesc').value='';
+      document.getElementById('taskPriority').value='medium';
+      document.getElementById('taskDue').value='';
+      taskColor='';
+      document.querySelectorAll('.cl-swatch').forEach((s,i)=>s.classList.toggle('active',i===0));
+    }
+    renderModalSubtasks();
+    document.getElementById('taskModal').classList.add('open');
+  }
+
+  function closeTaskModal() { document.getElementById('taskModal').classList.remove('open'); }
+
+  async function saveTask() {
+    const id = document.getElementById('editTaskId').value;
+    const title = document.getElementById('taskTitle').value.trim();
+    if (!title) { alert('Please enter a task title'); return; }
+    const fd = new FormData();
+    fd.append('action', id?'update_task':'add_task');
+    if(id) fd.append('id',id);
+    fd.append('title',title);
+    fd.append('description',document.getElementById('taskDesc').value);
+    fd.append('priority',document.getElementById('taskPriority').value);
+    fd.append('due_date',document.getElementById('taskDue').value);
+    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) {
+      // Save colour + subtasks to localStorage
+      const tid = id ? parseInt(id) : d.id;
+      if(tid){
+        if(!taskMeta[tid]) taskMeta[tid]={};
+        taskMeta[tid].color = taskColor;
+        taskMeta[tid].subtasks = editSubtasks;
+        saveMeta();
+      }
+      closeTaskModal(); await loadTasks();
+    }
+    else alert(d.message||'Error saving task');
+  }
+
+  function editTask(id) { openTaskModal(id); }
+
+  async function deleteTask(id) {
+    if(!confirm('Delete this task?')) return;
+    const fd = new FormData(); fd.append('action','delete_task'); fd.append('id',id);
+    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { tasks=tasks.filter(t=>t.id!=id); renderTasks(); }
+  }
+
+  async function deleteFile(id) {
+    if(!confirm('Delete this file?')) return;
+    const fd = new FormData(); fd.append('action','delete_file'); fd.append('id',id);
+    const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { files=files.filter(f=>f.id!=id); renderFiles(); }
+  }
+
+  function setupDrop() {
+    const zone = document.getElementById('dropZone');
+    const input = document.getElementById('fileInput');
+    zone.addEventListener('dragover', e=>{e.preventDefault();zone.classList.add('drag-over')});
+    zone.addEventListener('dragleave', ()=>zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e=>{e.preventDefault();zone.classList.remove('drag-over');uploadFiles(e.dataTransfer.files)});
+    input.addEventListener('change', e=>uploadFiles(e.target.files));
+  }
+
+  async function uploadFiles(fileList) {
+    const prog = document.getElementById('uploadProgress');
+    for(const file of fileList) {
+      prog.style.display='block';
+      prog.textContent='⏳ Uploading: '+file.name;
+      const fd = new FormData(); fd.append('action','upload_file'); fd.append('file',file);
+      try {
+        const r = await fetch('tasks_api.php',{method:'POST',body:fd});
+        const d = await r.json();
+        if(d.success) { files.unshift({id:d.id,filename:d.filename,original_name:d.original_name,file_type:d.file_type,url:d.url,file_size:file.size}); renderFiles(); }
+        else alert('Upload failed: '+d.message);
+      } catch(e) { alert('Upload error'); }
+    }
+    prog.style.display='none';
+  }
+
+  function escHtml(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';}
+  function escJs(s){return s?s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"):''}
+  function formatDate(d){return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+  document.getElementById('taskModal').addEventListener('click', e=>{if(e.target.classList.contains('modal')) closeTaskModal()});
+  document.getElementById('fileViewerModal').addEventListener('click', e=>{if(e.target.id==='fileViewerModal'||e.target.id==='fileViewerStage') closeFileViewer();});
+  document.addEventListener('keydown', e=>{if(e.key==='Escape'){closeTaskModal();closeFileViewer();}});
+
+  init();
+</script>
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

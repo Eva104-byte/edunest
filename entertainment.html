@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Entertainment Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--ink:#0f0e17;--purple:#4f46e5;--border:rgba(255,255,255,.1)}
+  body{background:#0d0d14;font-family:'DM Sans',sans-serif;color:white;min-height:100vh}
+  nav{background:rgba(13,13,20,.97);padding:0 32px;display:flex;align-items:center;gap:14px;height:62px;position:sticky;top:0;z-index:200;border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(20px)}
+  .back{color:rgba(255,255,255,.5);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;transition:.2s}
+  .back:hover{background:rgba(255,255,255,.08);color:white}
+  .nav-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:white;margin-right:auto}
+  .btn{padding:9px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;border:none}
+  .btn-purple{background:var(--purple);color:white} .btn-purple:hover{background:#4338ca}
+  .btn-ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.14)} .btn-ghost:hover{background:rgba(255,255,255,.14)}
+  .tabs-bar{background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.07);padding:0 32px;display:flex;gap:4px}
+  .tab-btn{padding:14px 20px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;border:none;color:rgba(255,255,255,.45);border-bottom:2px solid transparent;transition:.2s;font-family:'DM Sans',sans-serif}
+  .tab-btn:hover{color:rgba(255,255,255,.8)}
+  .tab-btn.active{color:white;border-bottom-color:var(--purple)}
+  .tab-count{font-size:10px;background:rgba(255,255,255,.12);padding:2px 7px;border-radius:10px;margin-left:6px}
+  .tab-section{display:none} .tab-section.active{display:block}
+  .main{max-width:1300px;margin:0 auto;padding:28px 32px}
+  .upload-strip{background:linear-gradient(135deg,rgba(79,70,229,.14),rgba(79,70,229,.04));border-bottom:1px solid rgba(255,255,255,.06);padding:24px 32px}
+  .upload-inner{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+  .drop-zone{border:2px dashed rgba(79,70,229,.45);border-radius:14px;padding:32px;text-align:center;cursor:pointer;transition:.3s;background:rgba(79,70,229,.06)}
+  .drop-zone:hover,.drop-zone.drag-over{border-color:var(--purple);background:rgba(79,70,229,.12)}
+  .dz-icon{font-size:42px;margin-bottom:10px}
+  .dz-title{font-size:16px;font-weight:700;margin-bottom:6px}
+  .dz-sub{font-size:12px;color:rgba(255,255,255,.4);line-height:1.5}
+  .dz-types{font-size:10px;color:rgba(255,255,255,.25);margin-top:8px;background:rgba(255,255,255,.05);padding:5px 12px;border-radius:20px;display:inline-block}
+  .upload-form{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:20px}
+  .upload-form h4{font-size:13px;font-weight:700;margin-bottom:16px;color:rgba(255,255,255,.7)}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+  .field input,.field select{width:100%;padding:10px 13px;border:1.5px solid rgba(255,255,255,.1);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:white;background:rgba(255,255,255,.06);outline:none;transition:.2s}
+  .field input:focus,.field select:focus{border-color:var(--purple)}
+  .field select option{background:#1a1a2e}
+  .up-prog{background:rgba(79,70,229,.2);border:1px solid rgba(79,70,229,.4);border-radius:8px;padding:10px 14px;font-size:12px;display:none;margin-bottom:12px}
+  .up-bar{height:4px;background:rgba(255,255,255,.1);border-radius:10px;margin-top:6px;overflow:hidden}
+  .up-fill{height:100%;background:var(--purple);border-radius:10px;transition:width .3s;width:0%}
+  .filter-row{display:flex;gap:8px;margin-bottom:22px;align-items:center;flex-wrap:wrap}
+  .cat-btn{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:rgba(255,255,255,.55);transition:.2s}
+  .cat-btn:hover{border-color:rgba(255,255,255,.3);color:white}
+  .cat-btn.active{background:var(--purple);border-color:var(--purple);color:white}
+  .video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+  .video-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;transition:.3s}
+  .video-card:hover{border-color:rgba(79,70,229,.5);transform:translateY(-4px);box-shadow:0 18px 48px rgba(79,70,229,.18)}
+  .vthumb{position:relative;aspect-ratio:16/9;background:#1a1a2e;overflow:hidden;cursor:pointer}
+  .vthumb video{width:100%;height:100%;object-fit:cover;opacity:.75;pointer-events:none;display:block}
+  .vthumb .voverlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:.3s}
+  .vthumb:hover .voverlay{background:rgba(0,0,0,.45)}
+  .vplay{width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-size:20px;opacity:0;transform:scale(.75);transition:.3s;padding-left:4px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  .vthumb:hover .vplay{opacity:1;transform:scale(1)}
+  .vcat{position:absolute;top:10px;left:10px;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;background:rgba(79,70,229,.85);color:white;backdrop-filter:blur(4px)}
+  .vno-thumb{display:flex;align-items:center;justify-content:center;font-size:48px;width:100%;height:100%;background:linear-gradient(135deg,#1a1a2e,#16213e)}
+  .vinfo{padding:14px 16px}
+  .vtitle{font-weight:700;font-size:14px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .vmeta{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.35);margin-bottom:10px}
+  .vbtn-row{display:flex;gap:7px}
+  .vbtn{flex:1;padding:7px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.7);text-align:center;font-family:'DM Sans',sans-serif;text-decoration:none;display:flex;align-items:center;justify-content:center}
+  .vbtn:hover{background:rgba(255,255,255,.12);color:white}
+  .vbtn.del{border-color:rgba(196,83,90,.35);color:#e07780}
+  .vbtn.del:hover{background:rgba(196,83,90,.2)}
+  .vbtn.play-btn-card{background:rgba(79,70,229,.25);border-color:rgba(79,70,229,.5);color:#a5b4fc}
+  .vbtn.play-btn-card:hover{background:rgba(79,70,229,.45)}
+  .res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .res-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px;transition:.3s;cursor:pointer;text-decoration:none;display:block}
+  .res-card:hover{border-color:rgba(79,70,229,.5);background:rgba(79,70,229,.08);transform:translateY(-3px)}
+  .res-icon{font-size:30px;margin-bottom:12px}
+  .res-name{font-weight:700;font-size:14px;margin-bottom:5px;color:white}
+  .res-desc{font-size:12px;color:rgba(255,255,255,.45);line-height:1.5;margin-bottom:10px}
+  .res-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+  .res-tag{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(79,70,229,.2);color:#a5b4fc;font-weight:600}
+  .res-open{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#a5b4fc}
+  .res-free{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px}
+  .res-free.free{background:rgba(6,214,160,.15);color:#34d399}
+  .res-free.mixed{background:rgba(251,191,36,.1);color:#fbbf24}
+  .res-free.paid{background:rgba(239,68,68,.1);color:#f87171}
+  .res-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:6px}
+  .res-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px}
+  .res-cats{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+
+  /* ── AUDIO STYLES ── */
+  .audio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .audio-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;transition:.3s;display:flex;align-items:center;gap:14px;cursor:pointer}
+  .audio-card:hover{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.06);transform:translateY(-2px);box-shadow:0 10px 30px rgba(16,185,129,.1)}
+  .audio-card.playing{border-color:rgba(16,185,129,.7);background:rgba(16,185,129,.1)}
+  .audio-art{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,#1a2744,#0d3321);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;position:relative;overflow:hidden}
+  .audio-art.playing-art{animation:pulse-art 2s ease-in-out infinite}
+  @keyframes pulse-art{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}50%{box-shadow:0 0 0 8px rgba(16,185,129,0)}}
+  .audio-info{flex:1;min-width:0}
+  .audio-title{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+  .audio-artist{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .audio-meta{font-size:10px;color:rgba(255,255,255,.25)}
+  .audio-btn-row{display:flex;gap:5px;margin-top:8px}
+  .audio-btn{padding:4px 10px;border-radius:7px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);transition:.2s;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+  .audio-btn:hover{background:rgba(255,255,255,.14);color:white}
+  .audio-btn.del{border-color:rgba(196,83,90,.3);color:#e07780}
+  .audio-btn.del:hover{background:rgba(196,83,90,.18)}
+  .audio-btn.play-ab{background:rgba(16,185,129,.2);border-color:rgba(16,185,129,.4);color:#34d399}
+  .audio-btn.play-ab:hover{background:rgba(16,185,129,.35)}
+  .audio-play-icon{width:32px;height:32px;border-radius:50%;background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;transition:.2s;cursor:pointer;padding-left:2px}
+  .audio-play-icon:hover{background:rgba(16,185,129,.4)}
+
+  /* Mini audio player bar (sticky bottom) */
+  .audio-player-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,18,.97);border-top:1px solid rgba(16,185,129,.25);backdrop-filter:blur(20px);padding:12px 28px;z-index:500;transform:translateY(100%);transition:transform .3s ease;display:flex;align-items:center;gap:18px}
+  .audio-player-bar.visible{transform:translateY(0)}
+  .apb-art{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#1a2744,#0d3321);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .apb-info{min-width:0;flex-shrink:0;width:180px}
+  .apb-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .apb-artist{font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .apb-controls{display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .apb-btn{width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+  .apb-btn:hover{background:rgba(255,255,255,.18)}
+  .apb-btn.play-pause{background:rgba(16,185,129,.25);border:1px solid rgba(16,185,129,.4);color:#34d399;width:42px;height:42px;font-size:16px}
+  .apb-btn.play-pause:hover{background:rgba(16,185,129,.45)}
+  .apb-progress{flex:1;display:flex;align-items:center;gap:10px}
+  .apb-time{font-size:11px;color:rgba(255,255,255,.35);font-family:'DM Mono',monospace;flex-shrink:0;min-width:38px;text-align:center}
+  .apb-seek{flex:1;height:4px;border-radius:10px;background:rgba(255,255,255,.12);cursor:pointer;position:relative;-webkit-appearance:none;accent-color:#10b981}
+  .apb-seek::-webkit-slider-thumb{width:14px;height:14px;border-radius:50%;background:#10b981;cursor:pointer;-webkit-appearance:none;box-shadow:0 0 6px rgba(16,185,129,.5)}
+  .apb-volume{width:80px;height:4px;border-radius:10px;background:rgba(255,255,255,.12);cursor:pointer;-webkit-appearance:none;accent-color:#10b981;flex-shrink:0}
+  .apb-close{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.4);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+  .apb-close:hover{color:white;background:rgba(255,255,255,.1)}
+  .player-modal{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+  .player-modal.open{display:flex}
+  .player-close{position:absolute;top:18px;right:18px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:2}
+  .player-close:hover{background:rgba(255,255,255,.22)}
+  .player-meta{max-width:960px;width:100%;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+  .player-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:rgba(255,255,255,.9)}
+  .player-controls{display:flex;gap:8px}
+  .player-ctrl{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:white;transition:.2s;font-family:'DM Sans',sans-serif}
+  .player-ctrl:hover{background:rgba(255,255,255,.18)}
+  .player-wrap{max-width:960px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6);background:#000}
+  #mainPlayer{width:100%;display:block;max-height:72vh;background:#000;outline:none}
+  .player-error{padding:40px;text-align:center;color:rgba(255,255,255,.5)}
+  .player-error .err-icon{font-size:48px;margin-bottom:14px}
+  .player-error p{font-size:14px;line-height:1.8}
+  .empty-state{text-align:center;padding:70px 30px;color:rgba(255,255,255,.3);grid-column:1/-1}
+  .empty-state .icon{font-size:56px;margin-bottom:14px;opacity:.5}
+  .empty-state h3{font-size:18px;margin-bottom:8px;color:rgba(255,255,255,.45)}
+  .empty-state p{font-size:13px;line-height:1.6}
+  @media(max-width:850px){.upload-inner{grid-template-columns:1fr}.main{padding:20px}.upload-strip{padding:20px}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="portal.html" class="back">← Dashboard</a>
+  <div class="nav-title">🎬 Entertainment Hub</div>
+  <span style="font-size:13px;color:rgba(255,255,255,.35)" id="totalCount">0 videos</span>
+</nav>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('videos',this)">🎬 My Videos <span class="tab-count" id="tabVCount">0</span></button>
+  <button class="tab-btn" onclick="switchTab('audio',this)">🎵 My Audio <span class="tab-count" id="tabACount">0</span></button>
+  <button class="tab-btn" onclick="switchTab('resources',this)">🌐 Online Resources <span class="tab-count">21</span></button>
+</div>
+
+<!-- MY VIDEOS -->
+<div class="tab-section active" id="tabVideos">
+  <div class="upload-strip">
+    <div class="upload-inner">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('vidInput').click()">
+        <div class="dz-icon">🎬</div>
+        <div class="dz-title">Upload Your Videos</div>
+        <div class="dz-sub">Drag & drop or click to browse your device.<br>Videos are stored on your XAMPP server.</div>
+        <div class="dz-types">MP4 · WebM · MOV · AVI · MKV · M4V — Max 2GB per file</div>
+      </div>
+      <input type="file" id="vidInput" style="display:none" accept=".mp4,.webm,.mov,.avi,.mkv,.m4v" multiple>
+      <div class="upload-form">
+        <h4>📋 Video Details</h4>
+        <div class="up-prog" id="upProg"><span id="upMsg">Uploading...</span><div class="up-bar"><div class="up-fill" id="upFill"></div></div></div>
+        <div class="field"><label>Title (optional)</label><input type="text" id="vidTitle" placeholder="Leave blank to use filename"></div>
+        <div class="field"><label>Category</label>
+          <select id="vidCat"><option>General</option><option>Movies</option><option>Series</option><option>Music Videos</option><option>Documentaries</option><option>Comedy</option><option>Sports</option><option>Gaming</option><option>Tutorial</option><option>Short Films</option></select>
+        </div>
+        <button class="btn btn-purple" style="width:100%;margin-top:4px" onclick="document.getElementById('vidInput').click()">📤 Choose Video(s)</button>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="filter-row">
+      <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.3)">Category:</span>
+      <button class="cat-btn active" onclick="setCat('',this)">All</button>
+      <button class="cat-btn" onclick="setCat('Movies',this)">Movies</button>
+      <button class="cat-btn" onclick="setCat('Series',this)">Series</button>
+      <button class="cat-btn" onclick="setCat('Music Videos',this)">Music</button>
+      <button class="cat-btn" onclick="setCat('Documentaries',this)">Docs</button>
+      <button class="cat-btn" onclick="setCat('Comedy',this)">Comedy</button>
+      <button class="cat-btn" onclick="setCat('Sports',this)">Sports</button>
+      <button class="cat-btn" onclick="setCat('Gaming',this)">Gaming</button>
+      <span style="margin-left:auto;font-size:12px;color:rgba(255,255,255,.3)" id="filteredCount"></span>
+    </div>
+    <div class="video-grid" id="videoGrid">
+      <div class="empty-state"><div class="icon">🎬</div><h3>No videos yet</h3><p>Upload your favourite videos above to watch them anytime.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- MY AUDIO -->
+<div class="tab-section" id="tabAudio">
+  <div class="upload-strip">
+    <div class="upload-inner">
+      <div class="drop-zone" id="audioDropZone" onclick="document.getElementById('audInput').click()">
+        <div class="dz-icon">🎵</div>
+        <div class="dz-title">Upload Your Audio</div>
+        <div class="dz-sub">Drag & drop or click to browse.<br>Music, podcasts, audiobooks — anything audio.</div>
+        <div class="dz-types">MP3 · WAV · OGG · FLAC · AAC · M4A — Max 500MB per file</div>
+      </div>
+      <input type="file" id="audInput" style="display:none" accept=".mp3,.wav,.ogg,.flac,.aac,.m4a,.opus,.wma" multiple>
+      <div class="upload-form">
+        <h4>🎵 Track Details</h4>
+        <div class="up-prog" id="audProg"><span id="audMsg">Uploading...</span><div class="up-bar"><div class="up-fill" id="audFill"></div></div></div>
+        <div class="field"><label>Title (optional)</label><input type="text" id="audTitle" placeholder="Leave blank to use filename"></div>
+        <div class="field"><label>Artist (optional)</label><input type="text" id="audArtist" placeholder="e.g. Chike, Burna Boy"></div>
+        <div class="field"><label>Album (optional)</label><input type="text" id="audAlbum" placeholder="e.g. The Brother's Keeper"></div>
+        <button class="btn btn-purple" style="width:100%;margin-top:4px;background:#10b981;hover:background:#059669" onclick="document.getElementById('audInput').click()">🎵 Choose Audio File(s)</button>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="filter-row" style="margin-bottom:18px">
+      <input id="audioSearch" placeholder="🔍 Search tracks…" oninput="renderAudio()"
+        style="padding:8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:white;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:220px;transition:.2s"
+        onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='rgba(255,255,255,.14)'">
+      <span style="margin-left:auto;font-size:12px;color:rgba(255,255,255,.3)" id="audioCount">0 tracks</span>
+    </div>
+    <div class="audio-grid" id="audioGrid">
+      <div class="empty-state"><div class="icon">🎵</div><h3>No audio yet</h3><p>Upload your music, podcasts or audiobooks above to listen anytime.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ONLINE RESOURCES -->
+<div class="tab-section" id="tabResources">
+  <div class="main">
+    <div class="res-title">🌐 Entertainment & Media Resources</div>
+    <div class="res-sub">Stream, discover and enjoy content from top online platforms — opens in a new tab</div>
+    <div class="res-cats">
+      <button class="cat-btn active" onclick="filterRes('all',this)">All</button>
+      <button class="cat-btn" onclick="filterRes('streaming',this)">🎬 Streaming</button>
+      <button class="cat-btn" onclick="filterRes('music',this)">🎵 Music</button>
+      <button class="cat-btn" onclick="filterRes('games',this)">🎮 Games</button>
+      <button class="cat-btn" onclick="filterRes('news',this)">🎙 Podcasts & News</button>
+      <button class="cat-btn" onclick="filterRes('sports',this)">⚽ Sports</button>
+    </div>
+    <div class="res-grid" id="resGrid"></div>
+  </div>
+</div>
+
+<!-- PLAYER MODAL -->
+<div class="player-modal" id="playerModal">
+  <button class="player-close" onclick="closePlayer()">×</button>
+  <div class="player-meta">
+    <div class="player-title" id="playerTitle">Video</div>
+    <div class="player-controls">
+      <button class="player-ctrl" onclick="tryPiP()">⊡ Picture-in-Picture</button>
+      <button class="player-ctrl" onclick="tryFullscreen()">⛶ Fullscreen</button>
+    </div>
+  </div>
+  <div class="player-wrap" id="playerWrap">
+    <video id="mainPlayer" controls preload="auto" playsinline></video>
+  </div>
+</div>
+
+<script>
+let videos=[], currentCat='', resCat='all';
+
+const RESOURCES=[
+  {name:'YouTube',url:'https://youtube.com',icon:'▶',desc:'The world\'s largest video platform — music, tutorials, shorts, vlogs and more.',tags:['Video','Free'],cat:'streaming',free:'free'},
+  {name:'Netflix',url:'https://netflix.com',icon:'🎬',desc:'Premium streaming for movies, series, documentaries and anime.',tags:['Movies','Series'],cat:'streaming',free:'paid'},
+  {name:'Disney+',url:'https://disneyplus.com',icon:'✨',desc:'Disney, Marvel, Star Wars, Pixar and National Geographic.',tags:['Movies','Marvel'],cat:'streaming',free:'paid'},
+  {name:'Prime Video',url:'https://primevideo.com',icon:'📦',desc:'Amazon\'s streaming service with movies, series, and Amazon Originals.',tags:['Movies','Series'],cat:'streaming',free:'mixed'},
+  {name:'Crunchyroll',url:'https://crunchyroll.com',icon:'🍣',desc:'The best destination for anime streaming — thousands of titles.',tags:['Anime'],cat:'streaming',free:'mixed'},
+  {name:'Tubi',url:'https://tubitv.com',icon:'📺',desc:'100% free movies and TV shows — no subscription required.',tags:['Free','Movies'],cat:'streaming',free:'free'},
+  {name:'Spotify',url:'https://open.spotify.com',icon:'🟢',desc:'Stream millions of songs, podcasts and audiobooks on demand.',tags:['Music','Podcasts'],cat:'music',free:'mixed'},
+  {name:'YouTube Music',url:'https://music.youtube.com',icon:'🎵',desc:'Music streaming powered by YouTube — free with ads or Premium.',tags:['Music'],cat:'music',free:'mixed'},
+  {name:'SoundCloud',url:'https://soundcloud.com',icon:'☁️',desc:'Discover and stream independent artists and underground music.',tags:['Music','Indie'],cat:'music',free:'mixed'},
+  {name:'Deezer',url:'https://deezer.com',icon:'🎶',desc:'Music streaming with a vast catalogue and personalised radio.',tags:['Music','Radio'],cat:'music',free:'mixed'},
+  {name:'itch.io',url:'https://itch.io',icon:'🎮',desc:'Thousands of indie games — many free to play in your browser.',tags:['Indie','Browser'],cat:'games',free:'mixed'},
+  {name:'Poki',url:'https://poki.com',icon:'🕹',desc:'Free browser games — action, puzzle, sports and more. No download.',tags:['Browser','Free'],cat:'games',free:'free'},
+  {name:'CrazyGames',url:'https://crazygames.com',icon:'🃏',desc:'Free online games playable directly in your browser.',tags:['Browser','Free'],cat:'games',free:'free'},
+  {name:'Chess.com',url:'https://chess.com',icon:'♟',desc:'Play chess online against friends or AI. Puzzles and lessons included.',tags:['Chess','Strategy'],cat:'games',free:'mixed'},
+  {name:'BBC Sounds',url:'https://bbc.co.uk/sounds',icon:'🎙',desc:'BBC radio, podcasts and music. World-class journalism and entertainment.',tags:['Podcasts','Radio'],cat:'news',free:'free'},
+  {name:'Pocket Casts',url:'https://pocketcasts.com',icon:'🎧',desc:'Discover and follow podcasts from every genre.',tags:['Podcasts'],cat:'news',free:'mixed'},
+  {name:'Al Jazeera',url:'https://aljazeera.com',icon:'📡',desc:'Breaking news and in-depth journalism from around the world.',tags:['News','World'],cat:'news',free:'free'},
+  {name:'ESPN',url:'https://espn.com',icon:'🏆',desc:'Live scores, news, highlights and analysis for all major sports.',tags:['Scores','Highlights'],cat:'sports',free:'mixed'},
+  {name:'BBC Sport',url:'https://bbc.com/sport',icon:'⚽',desc:'Live coverage, scores and news from all major sports worldwide.',tags:['Football','Cricket'],cat:'sports',free:'free'},
+  {name:'OneFootball',url:'https://onefootball.com',icon:'🏟',desc:'Football news, live scores and match analysis from leagues worldwide.',tags:['Football','Scores'],cat:'sports',free:'free'},
+  {name:'Twitch',url:'https://twitch.tv',icon:'💜',desc:'Live streaming platform for gaming, music, talk shows and more.',tags:['Live','Gaming','Streams'],cat:'streaming',free:'free'},
+];
+
+async function init(){ await loadVideos(); await loadAudio(); renderResources(); setupDrop(); setupAudioDrop(); }
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('active');
+  btn.classList.add('active');
+}
+
+async function loadVideos(){
+  try{
+    const url='entertainment_api.php?action=get_videos'+(currentCat?'&category='+encodeURIComponent(currentCat):'');
+    const r=await fetch(url); const d=await r.json();
+    if(d.success){videos=d.videos; renderVideos();}
+  }catch(e){console.error(e);}
+}
+
+function setCat(cat,btn){currentCat=cat;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');loadVideos();}
+
+function renderVideos(){
+  document.getElementById('totalCount').textContent=videos.length+' video'+(videos.length!==1?'s':'');
+  document.getElementById('tabVCount').textContent=videos.length;
+  document.getElementById('filteredCount').textContent=videos.length+' video'+(videos.length!==1?'s':'')+(currentCat?' — '+currentCat:'');
+  const grid=document.getElementById('videoGrid');
+  if(!videos.length){
+    grid.innerHTML=`<div class="empty-state"><div class="icon">🎬</div><h3>No videos${currentCat?' in '+currentCat:' yet'}</h3>
+      <p>${currentCat?'Try a different category or upload videos.':'Upload your first video using the panel above.'}</p></div>`;
+    return;
+  }
+  grid.innerHTML=videos.map(v=>{
+    const safeUrl=escAttr(v.url); const safeTitle=escAttr(v.title);
+    return `<div class="video-card" id="vc-${v.id}">
+      <div class="vthumb" onclick="playVideo(${v.id},'${escJs(v.url)}','${escJs(v.title)}')">
+        <video src="${safeUrl}#t=2" preload="metadata" muted playsinline
+          onerror="this.parentNode.querySelector('.vno-thumb').style.display='flex';this.style.display='none'"></video>
+        <div class="vno-thumb" style="display:none">🎬</div>
+        <div class="voverlay"><div class="vplay">▶</div></div>
+        <div class="vcat">${escHtml(v.category||'General')}</div>
+      </div>
+      <div class="vinfo">
+        <div class="vtitle" title="${safeTitle}">${escHtml(v.title)}</div>
+        <div class="vmeta"><span>👁 ${v.views} view${v.views!=1?'s':''}</span><span>${fmtDate(v.created_at)}</span></div>
+        <div class="vbtn-row">
+          <button class="vbtn play-btn-card" onclick="playVideo(${v.id},'${escJs(v.url)}','${escJs(v.title)}')">▶ Play</button>
+          <a href="${safeUrl}" download class="vbtn">⬇ Save</a>
+          <button class="vbtn del" onclick="deleteVideo(event,${v.id})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function playVideo(id, url, title){
+  const modal=document.getElementById('playerModal');
+  const wrap=document.getElementById('playerWrap');
+  document.getElementById('playerTitle').textContent=title||'Video';
+
+  // Fully rebuild the video element to avoid source caching issues
+  wrap.innerHTML=`<video id="mainPlayer" controls preload="auto" playsinline style="width:100%;display:block;max-height:72vh;background:#000;outline:none"></video>`;
+  const player=document.getElementById('mainPlayer');
+
+  player.addEventListener('error',function(){
+    wrap.innerHTML=`<div class="player-error"><div class="err-icon">⚠️</div>
+      <p>Video could not be played in the browser.<br><br>
+      <strong>Solutions:</strong><br>
+      • Use MP4 (H.264) format — best browser support<br>
+      • Convert other formats using <a href="https://handbrake.fr" target="_blank" style="color:#a5b4fc">HandBrake (free)</a><br>
+      • Or download the file to play it locally:<br><br>
+      <a href="${escAttr(url)}" download style="display:inline-block;margin-top:8px;padding:10px 22px;background:#4f46e5;color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">⬇ Download Video</a></p></div>`;
+  },{once:true});
+
+  player.src=url;
+  player.load();
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+  player.play().catch(()=>{/* user will click play manually */});
+
+  // Track views
+  const fd=new FormData(); fd.append('action','increment_views'); fd.append('id',id);
+  fetch('entertainment_api.php',{method:'POST',body:fd}).then(()=>{
+    const v=videos.find(v=>v.id==id); if(v) v.views++;
+  });
+}
+
+function closePlayer(){
+  const wrap=document.getElementById('playerWrap');
+  wrap.innerHTML=`<video id="mainPlayer" controls preload="auto" playsinline style="width:100%;display:block;max-height:72vh;background:#000;outline:none"></video>`;
+  document.getElementById('playerModal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function tryPiP(){
+  const p=document.getElementById('mainPlayer');
+  if(!p||!p.src){return;}
+  if(document.pictureInPictureElement) document.exitPictureInPicture().catch(()=>{});
+  else p.requestPictureInPicture().catch(()=>alert('PiP not supported in this browser.'));
+}
+
+function tryFullscreen(){
+  const w=document.getElementById('playerWrap');
+  if(!document.fullscreenElement) w.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+
+async function deleteVideo(e,id){
+  e.stopPropagation();
+  if(!confirm('Remove this video?'))return;
+  const fd=new FormData(); fd.append('action','delete_video'); fd.append('id',id);
+  const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+  const d=await r.json();
+  if(d.success){videos=videos.filter(v=>v.id!=id); renderVideos();}
+}
+
+function setupDrop(){
+  const zone=document.getElementById('dropZone');
+  const input=document.getElementById('vidInput');
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');doUpload(e.dataTransfer.files)});
+  input.addEventListener('change',e=>doUpload(e.target.files));
+}
+
+async function doUpload(fileList){
+  const prog=document.getElementById('upProg');
+  const fill=document.getElementById('upFill');
+  const msg=document.getElementById('upMsg');
+  for(const file of fileList){
+    prog.style.display='block'; msg.textContent='⏳ Uploading: '+file.name; fill.style.width='3%';
+    const title=document.getElementById('vidTitle').value.trim()||file.name.replace(/\.[^.]+$/,'');
+    const cat=document.getElementById('vidCat').value;
+    const fd=new FormData(); fd.append('action','upload_video'); fd.append('video',file); fd.append('title',title); fd.append('category',cat);
+    try{
+      let p=3; const iv=setInterval(()=>{p=Math.min(p+Math.random()*10,88);fill.style.width=p+'%';},400);
+      const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+      clearInterval(iv); fill.style.width='100%';
+      const d=await r.json();
+      if(d.success){msg.textContent='✅ Uploaded: '+file.name; document.getElementById('vidTitle').value=''; await loadVideos();}
+      else{msg.textContent='❌ '+d.message;}
+    }catch(err){msg.textContent='❌ Upload failed. Check XAMPP is running.';}
+    await new Promise(r=>setTimeout(r,2000));
+  }
+  prog.style.display='none';
+}
+
+function filterRes(cat,btn){resCat=cat;document.querySelectorAll('.res-cats .cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderResources();}
+
+function renderResources(){
+  const list=resCat==='all'?RESOURCES:RESOURCES.filter(r=>r.cat===resCat);
+  document.getElementById('resGrid').innerHTML=list.map(r=>`
+    <a href="${r.url}" target="_blank" rel="noopener noreferrer" class="res-card">
+      <div class="res-icon">${r.icon}</div>
+      <div class="res-name">${r.name} <span class="res-free ${r.free}">${r.free==='free'?'Free':r.free==='paid'?'Paid':'Free/Paid'}</span></div>
+      <div class="res-desc">${r.desc}</div>
+      <div class="res-tags">${r.tags.map(t=>`<span class="res-tag">${t}</span>`).join('')}</div>
+      <div class="res-open">🌐 Open ${r.name} →</div>
+    </a>`).join('');
+}
+
+function escHtml(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+function escAttr(s){return s?String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'):''}
+function escJs(s){return s?String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"):''}
+function fmtDate(d){return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+function fmtTime(s){const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec;}
+function fmtSize(b){return b>1048576?(b/1048576).toFixed(1)+'MB':(b/1024|0)+'KB';}
+
+// ── AUDIO STATE ──────────────────────────────────────────────
+let tracks=[], currentTrackIdx=-1;
+const audioEl=new Audio();
+audioEl.addEventListener('timeupdate',()=>{
+  const pct=audioEl.duration?audioEl.currentTime/audioEl.duration*100:0;
+  document.getElementById('apbSeek').value=pct;
+  document.getElementById('apbCurrent').textContent=fmtTime(audioEl.currentTime);
+});
+audioEl.addEventListener('loadedmetadata',()=>{
+  document.getElementById('apbDuration').textContent=fmtTime(audioEl.duration);
+});
+audioEl.addEventListener('ended',()=>skipTrack(1));
+audioEl.addEventListener('play',()=>{
+  document.getElementById('apbPlayPause').textContent='⏸';
+  highlightTrack();
+});
+audioEl.addEventListener('pause',()=>{
+  document.getElementById('apbPlayPause').textContent='▶';
+  highlightTrack();
+});
+
+async function loadAudio(){
+  try{
+    const r=await fetch('entertainment_api.php?action=get_audio');
+    const text=await r.text();
+    let d; try{d=JSON.parse(text);}catch(e){console.error('Audio load: invalid JSON');return;}
+    if(d.success){tracks=d.tracks||[]; renderAudio();}
+  }catch(e){console.error('loadAudio error:',e);}
+}
+
+function renderAudio(){
+  const q=(document.getElementById('audioSearch')?.value||'').toLowerCase().trim();
+  let list=q?tracks.filter(t=>t.title.toLowerCase().includes(q)||(t.artist||'').toLowerCase().includes(q)):tracks;
+  document.getElementById('audioCount').textContent=list.length+' track'+(list.length!==1?'s':'');
+  document.getElementById('tabACount').textContent=tracks.length;
+  const grid=document.getElementById('audioGrid');
+  if(!list.length){
+    grid.innerHTML=`<div class="empty-state"><div class="icon">🎵</div><h3>${q?'No matches':'No audio yet'}</h3>
+      <p>${q?'Try a different search term.':'Upload your music, podcasts or audiobooks above.'}</p></div>`;
+    return;
+  }
+  grid.innerHTML=list.map((t,i)=>{
+    const idx=tracks.findIndex(x=>x.id===t.id);
+    const isPlaying=currentTrackIdx===idx&&!audioEl.paused;
+    const icon=getAudioIcon(t.original_name||t.title);
+    return `<div class="audio-card ${isPlaying?'playing':''}" id="ac-${t.id}" onclick="playTrack(${idx})">
+      <div class="audio-art ${isPlaying?'playing-art':''}">${icon}</div>
+      <div class="audio-info">
+        <div class="audio-title" title="${escAttr(t.title)}">${escHtml(t.title)}</div>
+        <div class="audio-artist">${t.artist?escHtml(t.artist):'Unknown Artist'}${t.album?' · '+escHtml(t.album):''}</div>
+        <div class="audio-meta">${fmtDate(t.created_at)}${t.file_size?' · '+fmtSize(t.file_size):''}</div>
+        <div class="audio-btn-row">
+          <button class="audio-btn play-ab" onclick="event.stopPropagation();playTrack(${idx})">${isPlaying?'⏸ Pause':'▶ Play'}</button>
+          <a href="${escAttr(t.url)}" download="${escAttr(t.original_name||t.title)}" class="audio-btn" onclick="event.stopPropagation()">⬇ Save</a>
+          <button class="audio-btn del" onclick="event.stopPropagation();deleteTrack(${t.id})">🗑</button>
+        </div>
+      </div>
+      <div class="audio-play-icon" onclick="event.stopPropagation();playTrack(${idx})">${isPlaying?'⏸':'▶'}</div>
+    </div>`;
+  }).join('');
+}
+
+function getAudioIcon(name){
+  const ext=(name||'').split('.').pop().toLowerCase();
+  const icons={mp3:'🎵',wav:'🎼',flac:'💿',ogg:'🔊',aac:'🎤',m4a:'🎧',opus:'🎙',wma:'🎶'};
+  return icons[ext]||'🎵';
+}
+
+function playTrack(idx){
+  if(idx<0||idx>=tracks.length) return;
+  const t=tracks[idx];
+  currentTrackIdx=idx;
+  audioEl.src=t.url;
+  audioEl.load();
+  audioEl.play().catch(()=>{});
+  // Update player bar
+  document.getElementById('apbTitle').textContent=t.title;
+  document.getElementById('apbArtist').textContent=t.artist||(t.album||'Unknown Artist');
+  document.getElementById('apbArt').textContent=getAudioIcon(t.original_name||t.title);
+  document.getElementById('audioPlayerBar').classList.add('visible');
+  document.getElementById('apbSeek').value=0;
+  document.getElementById('apbCurrent').textContent='0:00';
+  document.getElementById('apbDuration').textContent='0:00';
+}
+
+function togglePlay(){
+  if(!audioEl.src){return;}
+  if(audioEl.paused) audioEl.play().catch(()=>{});
+  else audioEl.pause();
+}
+
+function skipTrack(dir){
+  if(!tracks.length) return;
+  let next=currentTrackIdx+dir;
+  if(next<0) next=tracks.length-1;
+  if(next>=tracks.length) next=0;
+  playTrack(next);
+}
+
+function seekAudio(val){
+  if(audioEl.duration) audioEl.currentTime=audioEl.duration*(val/100);
+}
+
+function setVolume(val){
+  audioEl.volume=val/100;
+}
+
+function stopAudio(){
+  audioEl.pause(); audioEl.src='';
+  document.getElementById('audioPlayerBar').classList.remove('visible');
+  currentTrackIdx=-1;
+  renderAudio();
+}
+
+function highlightTrack(){
+  document.querySelectorAll('.audio-card').forEach(c=>c.classList.remove('playing'));
+  if(currentTrackIdx>=0){
+    const t=tracks[currentTrackIdx];
+    if(t){const c=document.getElementById('ac-'+t.id); if(c) c.classList.toggle('playing',!audioEl.paused);}
+  }
+  renderAudio();
+}
+
+async function deleteTrack(id){
+  if(!confirm('Delete this track?'))return;
+  const fd=new FormData(); fd.append('action','delete_audio'); fd.append('id',id);
+  try{
+    const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.success){
+      // If currently playing this track, stop
+      const idx=tracks.findIndex(t=>t.id==id);
+      if(idx===currentTrackIdx) stopAudio();
+      else if(idx<currentTrackIdx) currentTrackIdx--;
+      tracks=tracks.filter(t=>t.id!=id);
+      renderAudio();
+    }
+  }catch(e){alert('Delete failed. Is XAMPP running?');}
+}
+
+function setupAudioDrop(){
+  const zone=document.getElementById('audioDropZone');
+  const input=document.getElementById('audInput');
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');doAudioUpload(e.dataTransfer.files)});
+  input.addEventListener('change',e=>doAudioUpload(e.target.files));
+}
+
+async function doAudioUpload(fileList){
+  const prog=document.getElementById('audProg'),fill=document.getElementById('audFill'),msg=document.getElementById('audMsg');
+  for(const file of fileList){
+    prog.style.display='block'; msg.textContent='⏳ Uploading: '+file.name; fill.style.width='3%';
+    const title=document.getElementById('audTitle').value.trim()||file.name.replace(/\.[^.]+$/,'');
+    const artist=document.getElementById('audArtist').value.trim();
+    const album=document.getElementById('audAlbum').value.trim();
+    const fd=new FormData();
+    fd.append('action','upload_audio'); fd.append('audio',file);
+    fd.append('title',title); fd.append('artist',artist); fd.append('album',album);
+    try{
+      let p=3; const iv=setInterval(()=>{p=Math.min(p+Math.random()*10,88);fill.style.width=p+'%';},400);
+      const r=await fetch('entertainment_api.php',{method:'POST',body:fd});
+      clearInterval(iv); fill.style.width='100%';
+      const text=await r.text();
+      let d; try{d=JSON.parse(text);}catch(e){d={success:false,message:'Invalid server response'};}
+      if(d.success){
+        msg.textContent='✅ Uploaded: '+file.name;
+        document.getElementById('audTitle').value='';
+        document.getElementById('audArtist').value='';
+        document.getElementById('audAlbum').value='';
+        await loadAudio();
+      } else msg.textContent='❌ '+(d.message||'Upload failed');
+    }catch(err){msg.textContent='❌ Upload failed. Check XAMPP is running.';}
+    await new Promise(res=>setTimeout(res,2000));
+  }
+  prog.style.display='none';
+}
+
+document.getElementById('playerModal').addEventListener('click',e=>{if(e.target.id==='playerModal')closePlayer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
+init();
+</script>
+<!-- Sticky Audio Player Bar -->
+<div class="audio-player-bar" id="audioPlayerBar">
+  <div class="apb-art" id="apbArt">🎵</div>
+  <div class="apb-info">
+    <div class="apb-title" id="apbTitle">No track playing</div>
+    <div class="apb-artist" id="apbArtist">—</div>
+  </div>
+  <div class="apb-controls">
+    <button class="apb-btn" onclick="skipTrack(-1)" title="Previous">⏮</button>
+    <button class="apb-btn play-pause" id="apbPlayPause" onclick="togglePlay()">▶</button>
+    <button class="apb-btn" onclick="skipTrack(1)" title="Next">⏭</button>
+  </div>
+  <div class="apb-progress">
+    <span class="apb-time" id="apbCurrent">0:00</span>
+    <input type="range" class="apb-seek" id="apbSeek" value="0" min="0" max="100" step="0.1" oninput="seekAudio(this.value)">
+    <span class="apb-time" id="apbDuration">0:00</span>
+  </div>
+  <span style="font-size:12px;color:rgba(255,255,255,.3)">🔊</span>
+  <input type="range" class="apb-volume" id="apbVolume" value="100" min="0" max="100" oninput="setVolume(this.value)" title="Volume">
+  <button class="apb-close" onclick="stopAudio()" title="Close player">✕</button>
+</div>
+
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

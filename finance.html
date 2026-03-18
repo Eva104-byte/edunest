@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Finance Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--ink:#0f0e17;--cream:#fffcf5;--gold:#e8b84b;--sage:#3d6b5e;--rose:#c4535a;--border:#e8e4db;--card:#fff}
+  body{background:#f5f3ef;font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
+  nav{background:var(--ink);padding:0 32px;display:flex;align-items:center;gap:16px;height:60px;position:sticky;top:0;z-index:100}
+  .back{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;transition:all .2s}
+  .back:hover{background:rgba(255,255,255,.1);color:white}
+  .nav-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:white;margin-right:auto}
+  .btn{padding:10px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none}
+  .btn-dark{background:var(--ink);color:white}
+  .btn-dark:hover{background:#2a2930}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--ink)}
+  .btn-green{background:#e8f4f1;color:#065f46;border:none}
+  .btn-green:hover{background:#d1fae5}
+  .btn-red{background:#fde8e9;color:#b91c1c;border:none}
+  .btn-red:hover{background:#fca5a5}
+
+  .layout{max-width:1300px;margin:0 auto;padding:32px;display:grid;grid-template-columns:1fr 340px;gap:28px}
+  .panel{background:var(--card);border-radius:18px;border:1.5px solid var(--border);overflow:hidden}
+  .panel-header{padding:22px 26px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .panel-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700}
+
+  /* Summary cards */
+  .summary-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1.5px solid var(--border)}
+  .sum-card{padding:22px 24px;text-align:center;border-right:1.5px solid var(--border)}
+  .sum-card:last-child{border-right:none}
+  .sum-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#aaa;margin-bottom:8px}
+  .sum-amount{font-family:'Playfair Display',serif;font-size:28px;font-weight:700}
+  .sum-amount.income{color:var(--sage)}
+  .sum-amount.expense{color:var(--rose)}
+  .sum-amount.balance.pos{color:var(--sage)}
+  .sum-amount.balance.neg{color:var(--rose)}
+  .sum-sub{font-size:11px;color:#aaa;margin-top:4px}
+
+  /* Month nav */
+  .month-nav{display:flex;align-items:center;gap:12px}
+  .month-nav .m-label{font-weight:600;font-size:14px;min-width:130px;text-align:center}
+  .m-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s}
+  .m-btn:hover{background:var(--ink);color:white;border-color:var(--ink)}
+
+  /* Transactions */
+  .trans-list{padding:16px 24px;display:flex;flex-direction:column;gap:8px;min-height:150px}
+  .trans-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;
+    border:1.5px solid var(--border);background:white;transition:all .2s}
+  .trans-item:hover{border-color:#c0bdb6}
+  .trans-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .trans-icon.income{background:#e8f4f1}
+  .trans-icon.expense{background:#fde8e9}
+  .trans-info{flex:1}
+  .trans-cat{font-weight:600;font-size:14px}
+  .trans-meta{font-size:12px;color:#888;margin-top:2px}
+  .trans-amount{font-family:'Playfair Display',serif;font-size:16px;font-weight:700}
+  .trans-amount.income{color:var(--sage)}
+  .trans-amount.expense{color:var(--rose)}
+  .del-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:18px;padding:4px;border-radius:6px;transition:all .2s}
+  .del-btn:hover{background:#fde8e9;color:#b91c1c}
+  .empty-state{text-align:center;padding:40px;color:#aaa;font-size:13px}
+  .empty-state .icon{font-size:40px;margin-bottom:10px}
+
+  /* Category budget bars */
+  .budget-section{padding:18px 24px}
+  .budget-item{margin-bottom:18px}
+  .budget-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .budget-cat{font-weight:600;font-size:13px}
+  .budget-nums{font-size:12px;color:#888}
+  .budget-bar{height:8px;background:#f0ece4;border-radius:10px;overflow:hidden}
+  .budget-fill{height:100%;border-radius:10px;transition:width .4s}
+  .budget-fill.safe{background:var(--sage)}
+  .budget-fill.warn{background:var(--gold)}
+  .budget-fill.over{background:var(--rose)}
+
+  /* Side forms */
+  .side-stack{display:flex;flex-direction:column;gap:20px}
+  .form-body{padding:22px 24px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11px;font-weight:600;color:#555;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+  .field input,.field select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:white;outline:none;transition:all .2s}
+  .field input:focus,.field select:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(15,14,23,0.06)}
+  .type-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#f5f3ef;border-radius:10px;padding:3px}
+  .type-btn{padding:9px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;transition:all .25s}
+  .type-btn.income.active{background:#e8f4f1;color:#065f46}
+  .type-btn.expense.active{background:#fde8e9;color:#b91c1c}
+  .tabs{display:flex;padding:16px 20px;gap:8px;border-bottom:1.5px solid var(--border)}
+  .tab-pill{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;
+    border:1.5px solid var(--border);background:white;transition:all .2s}
+  .tab-pill.active{background:var(--ink);color:white;border-color:var(--ink)}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(15,14,23,0.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.open{display:flex}
+  .modal-box{background:white;border-radius:20px;padding:36px;width:100%;max-width:440px}
+  .modal-box h3{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:20px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+
+  @media(max-width:900px){.layout{grid-template-columns:1fr;padding:16px}.summary-bar{grid-template-columns:1fr}}
+
+[data-theme="dark"] body{background:#0d1117;color:#e2e8f0}
+[data-theme="dark"] .panel,[data-theme="dark"] .info-card,[data-theme="dark"] .todo-panel,
+[data-theme="dark"] .pomodoro,[data-theme="dark"] .add-link-bar,
+[data-theme="dark"] .modal-box,[data-theme="dark"] .editor-box{background:#161b22;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .panel-header,[data-theme="dark"] .pom-header,[data-theme="dark"] .panel-title{border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .field input,[data-theme="dark"] .field select,[data-theme="dark"] .field textarea{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .filter-btn,[data-theme="dark"] .task-item,[data-theme="dark"] .trans-item,
+[data-theme="dark"] .file-item,[data-theme="dark"] .file-card,[data-theme="dark"] .todo-item,
+[data-theme="dark"] .event-item,[data-theme="dark"] .goal-item,[data-theme="dark"] .budget-item{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] .app-desc,[data-theme="dark"] .trans-meta,[data-theme="dark"] .note-date,
+[data-theme="dark"] .file-meta,[data-theme="dark"] .file-size{color:#8b949e}
+[data-theme="dark"] .drop-zone{background:#161b22;border-color:#30363d}
+[data-theme="dark"] .drop-zone:hover{background:#21262d}
+[data-theme="dark"] .add-task-row input,[data-theme="dark"] .add-task-row select{background:#21262d;border-color:#30363d;color:#e2e8f0}
+[data-theme="dark"] nav{background:#010409}
+
+</style>
+</head>
+<body>
+<nav>
+  <a href="portal.html" class="back">← Dashboard</a>
+  <div class="nav-title">💰 Finance Manager</div>
+  <button class="btn btn-ghost" onclick="exportCSV()" style="font-size:12px;padding:8px 14px">⬇ Export CSV</button>
+  <button class="btn btn-ghost" onclick="printReport()" style="font-size:12px;padding:8px 14px">🖨 Print</button>
+  <button class="btn btn-dark" onclick="openBudgetModal()">Set Budget</button>
+<button class="theme-toggle" onclick="EduTheme.toggle()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:7px 14px;border-radius:8px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto">🌙 Dark</button>
+</nav>
+
+<div class="layout">
+  <!-- Main -->
+  <div>
+    <div class="panel" style="margin-bottom:24px">
+      <div class="summary-bar">
+        <div class="sum-card">
+          <div class="sum-label">Income</div>
+          <div class="sum-amount income" id="totalIncome">KSh 0.00</div>
+          <div class="sum-sub">This month</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-label">Expenses</div>
+          <div class="sum-amount expense" id="totalExpense">KSh 0.00</div>
+          <div class="sum-sub">This month</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-label">Balance</div>
+          <div class="sum-amount balance" id="totalBalance">KSh 0.00</div>
+          <div class="sum-sub">Remaining</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Transactions</div>
+        <div class="month-nav">
+          <button class="m-btn" onclick="changeMonth(-1)">←</button>
+          <div class="m-label" id="monthLabel">Loading...</div>
+          <button class="m-btn" onclick="changeMonth(1)">→</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab-pill active" onclick="setFilter('all',this)">All</button>
+        <button class="tab-pill" onclick="setFilter('income',this)">Income</button>
+        <button class="tab-pill" onclick="setFilter('expense',this)">Expenses</button>
+      </div>
+      <div class="trans-list" id="transList">
+        <div class="empty-state"><div class="icon">💸</div><p>No transactions yet</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="side-stack">
+    <!-- Add transaction -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Add Transaction</div></div>
+      <div class="form-body">
+        <div class="field">
+          <div class="type-toggle">
+            <button class="type-btn income active" id="typeIncome" onclick="setType('income')">+ Income</button>
+            <button class="type-btn expense" id="typeExpense" onclick="setType('expense')">− Expense</button>
+          </div>
+        </div>
+        <div class="field"><label>Category</label>
+          <select id="txCategory">
+            <option value="">Select category...</option>
+            <optgroup label="Income"><option>Salary/Job</option><option>Scholarship</option><option>Family Support</option><option>Freelance</option><option>Other Income</option></optgroup>
+            <optgroup label="Expenses"><option>Tuition</option><option>Rent/Housing</option><option>Food & Groceries</option><option>Transport</option><option>Books & Supplies</option><option>Entertainment</option><option>Clothing</option><option>Health</option><option>Phone/Data</option><option>Other</option></optgroup>
+          </select>
+        </div>
+        <div class="field"><label>Amount (KSh)</label>
+          <input type="number" id="txAmount" placeholder="0.00" min="0" step="0.01"></div>
+        <div class="field"><label>Description (optional)</label>
+          <input type="text" id="txDesc" placeholder="e.g. Monthly rent"></div>
+        <div class="field"><label>Date</label>
+          <input type="date" id="txDate"></div>
+        <button class="btn btn-dark" style="width:100%" onclick="addTransaction()">Add Transaction</button>
+      </div>
+    </div>
+
+    <!-- Budget overview -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Budget Overview</div></div>
+      <div class="budget-section" id="budgetSection">
+        <div class="empty-state" style="padding:20px">Set budgets to track spending per category</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Budget modal -->
+<div class="modal" id="budgetModal">
+  <div class="modal-box">
+    <h3>Set Monthly Budget</h3>
+    <div class="field"><label>Category</label>
+      <select id="budgetCat">
+        <option>Food & Groceries</option><option>Transport</option><option>Books & Supplies</option>
+        <option>Entertainment</option><option>Rent/Housing</option><option>Clothing</option>
+        <option>Health</option><option>Phone/Data</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Budget Amount (KSh)</label>
+      <input type="number" id="budgetAmount" placeholder="0.00" min="0" step="0.01"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBudgetModal()">Cancel</button>
+      <button class="btn btn-dark" onclick="saveBudget()">Save Budget</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let transactions=[], budgets=[], summary={income:0,expense:0,balance:0,by_category:{}}, filter='all', txType='income';
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let currentMonth=new Date().toISOString().slice(0,7);
+
+  function fmt(n){return 'KSh '+parseFloat(n||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+  async function init(){
+    document.getElementById('txDate').value=new Date().toISOString().slice(0,10);
+    // Load all three in parallel, then render budget section once both summary and budgets are ready
+    await Promise.all([loadTransactions(), loadSummaryAndBudgets()]);
+    updateMonthLabel();
+  }
+
+  // Load summary and budgets together so renderBudgetSection always has both
+  async function loadSummaryAndBudgets(){
+    await Promise.all([loadSummary(), loadBudgets()]);
+    renderBudgetSection();
+  }
+
+  async function loadTransactions(){
+    try{
+      const r=await fetch('finance_api.php?action=get_transactions&month='+currentMonth);
+      const d=await r.json();
+      if(d.success){transactions=d.transactions; renderTransactions();}
+    }catch(e){console.error('loadTransactions error',e);}
+  }
+
+  async function loadSummary(){
+    try{
+      const r=await fetch('finance_api.php?action=get_summary&month='+currentMonth);
+      const d=await r.json();
+      if(d.success){
+        // Safely store summary; ensure by_category is always an object
+        summary={
+          income: d.income||0,
+          expense: d.expense||0,
+          balance: (d.income||0)-(d.expense||0),
+          by_category: d.by_category||{}
+        };
+        document.getElementById('totalIncome').textContent=fmt(summary.income);
+        document.getElementById('totalExpense').textContent=fmt(summary.expense);
+        const el=document.getElementById('totalBalance');
+        el.textContent=fmt(summary.balance);
+        el.className='sum-amount balance '+(summary.balance>=0?'pos':'neg');
+      }
+    }catch(e){console.error('loadSummary error',e);}
+  }
+
+  async function loadBudgets(){
+    try{
+      const r=await fetch('finance_api.php?action=get_budgets&month='+currentMonth);
+      const d=await r.json();
+      if(d.success){budgets=d.budgets||[];}
+    }catch(e){console.error('loadBudgets error',e);}
+  }
+
+  function changeMonth(dir){
+    const [y,m]=currentMonth.split('-').map(Number);
+    const nd=new Date(y,m-1+dir,1);
+    currentMonth=nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0');
+    updateMonthLabel();
+    // Reset data while loading
+    transactions=[]; budgets=[]; summary={income:0,expense:0,balance:0,by_category:{}};
+    renderTransactions(); renderBudgetSection();
+    document.getElementById('totalIncome').textContent=fmt(0);
+    document.getElementById('totalExpense').textContent=fmt(0);
+    document.getElementById('totalBalance').textContent=fmt(0);
+    Promise.all([loadTransactions(), loadSummaryAndBudgets()]);
+  }
+
+  function updateMonthLabel(){
+    const [y,m]=currentMonth.split('-').map(Number);
+    document.getElementById('monthLabel').textContent=months[m-1]+' '+y;
+  }
+
+  function setFilter(f,btn){
+    filter=f;
+    document.querySelectorAll('.tab-pill').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTransactions();
+  }
+
+  function setType(t){
+    txType=t;
+    document.getElementById('typeIncome').classList.toggle('active',t==='income');
+    document.getElementById('typeExpense').classList.toggle('active',t==='expense');
+  }
+
+  const catIcons={
+    'Salary/Job':'💼','Scholarship':'🎓','Family Support':'👨‍👩‍👧','Freelance':'💻','Other Income':'💵',
+    'Tuition':'📚','Rent/Housing':'🏠','Food & Groceries':'🍽','Transport':'🚌','Books & Supplies':'📖',
+    'Entertainment':'🎬','Clothing':'👕','Health':'💊','Phone/Data':'📱','Other':'📦'
+  };
+
+  function renderTransactions(){
+    const list=document.getElementById('transList');
+    let items=filter==='all'?transactions:transactions.filter(t=>t.type===filter);
+    if(!items.length){
+      list.innerHTML='<div class="empty-state"><div class="icon">💸</div><p>No '+(filter==='all'?'':filter+' ')+'transactions this month</p></div>';
+      return;
+    }
+    list.innerHTML=items.map(t=>`
+      <div class="trans-item">
+        <div class="trans-icon ${t.type}">${catIcons[t.category]||'💰'}</div>
+        <div class="trans-info">
+          <div class="trans-cat">${escHtml(t.category)}</div>
+          <div class="trans-meta">${formatDate(t.transaction_date)}${t.description?' · '+escHtml(t.description):''}</div>
+        </div>
+        <div class="trans-amount ${t.type}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
+        <button class="del-btn" onclick="deleteTransaction(${t.id})">×</button>
+      </div>`).join('');
+  }
+
+  function renderBudgetSection(){
+    const sec=document.getElementById('budgetSection');
+    if(!budgets.length){
+      sec.innerHTML='<div class="empty-state" style="padding:20px">Set budgets to track spending per category</div>';
+      return;
+    }
+    // Safely access by_category — default to empty object if missing
+    const bycat = (summary && summary.by_category) ? summary.by_category : {};
+    sec.innerHTML=budgets.map(b=>{
+      const spent=parseFloat(bycat[b.category_name]||0);
+      const budget=parseFloat(b.budget_amount||0);
+      const pct=budget>0?Math.min(100,(spent/budget)*100):0;
+      const cls=pct>90?'over':pct>70?'warn':'safe';
+      return `<div class="budget-item">
+        <div class="budget-header">
+          <div class="budget-cat">${escHtml(b.category_name)}</div>
+          <div class="budget-nums">${fmt(spent)} / ${fmt(budget)}</div>
+        </div>
+        <div class="budget-bar"><div class="budget-fill ${cls}" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  async function addTransaction(){
+    const cat=document.getElementById('txCategory').value;
+    const amount=parseFloat(document.getElementById('txAmount').value);
+    const desc=document.getElementById('txDesc').value;
+    const date=document.getElementById('txDate').value;
+    if(!cat){alert('Please select a category');return;}
+    if(!amount||amount<=0){alert('Please enter a valid amount');return;}
+    if(!date){alert('Please select a date');return;}
+    const fd=new FormData();
+    fd.append('action','add_transaction'); fd.append('type',txType);
+    fd.append('category',cat); fd.append('amount',amount);
+    fd.append('description',desc); fd.append('transaction_date',date);
+    try{
+      const r=await fetch('finance_api.php',{method:'POST',body:fd});
+      const d=await r.json();
+      if(d.success){
+        document.getElementById('txAmount').value='';
+        document.getElementById('txDesc').value='';
+        // Reload transactions and summary+budgets together
+        await Promise.all([loadTransactions(), loadSummaryAndBudgets()]);
+      } else alert(d.message||'Error adding transaction');
+    }catch(e){alert('Could not reach the server. Is XAMPP running?');}
+  }
+
+  async function deleteTransaction(id){
+    if(!confirm('Delete this transaction?'))return;
+    const fd=new FormData(); fd.append('action','delete_transaction'); fd.append('id',id);
+    try{
+      const r=await fetch('finance_api.php',{method:'POST',body:fd});
+      const d=await r.json();
+      if(d.success) await Promise.all([loadTransactions(), loadSummaryAndBudgets()]);
+    }catch(e){alert('Delete failed. Is XAMPP running?');}
+  }
+
+  function openBudgetModal(){document.getElementById('budgetModal').classList.add('open');}
+  function closeBudgetModal(){document.getElementById('budgetModal').classList.remove('open');}
+
+  async function saveBudget(){
+    const cat=document.getElementById('budgetCat').value;
+    const amount=parseFloat(document.getElementById('budgetAmount').value);
+    if(!amount||amount<=0){alert('Enter a valid amount');return;}
+    const fd=new FormData(); fd.append('action','set_budget');
+    fd.append('category_name',cat); fd.append('budget_amount',amount);
+    fd.append('month_year',currentMonth);
+    try{
+      const r=await fetch('finance_api.php',{method:'POST',body:fd});
+      const d=await r.json();
+      if(d.success){
+        document.getElementById('budgetAmount').value='';
+        closeBudgetModal();
+        await loadSummaryAndBudgets();
+      } else alert(d.message||'Error saving budget');
+    }catch(e){alert('Could not reach the server. Is XAMPP running?');}
+  }
+
+  function exportCSV(){
+    if(!transactions.length){alert('No transactions to export for this month.');return;}
+    const [y,m]=currentMonth.split('-').map(Number);
+    const monthName=months[m-1]+' '+y;
+    const rows=[['Date','Type','Category','Amount (KSh)','Description']];
+    transactions.forEach(t=>{
+      rows.push([t.transaction_date,t.type,t.category,parseFloat(t.amount).toFixed(2),t.description||'']);
+    });
+    rows.push([]);
+    rows.push(['SUMMARY','','','','']);
+    rows.push(['Total Income','','',parseFloat(summary.income||0).toFixed(2),'']);
+    rows.push(['Total Expenses','','',parseFloat(summary.expense||0).toFixed(2),'']);
+    rows.push(['Balance','','',parseFloat(summary.balance||0).toFixed(2),'']);
+    const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob=new Blob([csv],{type:'text/csv'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='EduNest_Finance_'+currentMonth+'.csv';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(a.href);
+  }
+
+  function printReport(){
+    const [y,m]=currentMonth.split('-').map(Number);
+    const monthName=months[m-1]+' '+y;
+    const income=parseFloat(summary.income||0);
+    const expense=parseFloat(summary.expense||0);
+    const bal=income-expense;
+    const rows=transactions.map(t=>`<tr>
+      <td>${escHtml(t.transaction_date)}</td>
+      <td><span style="padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;background:${t.type==='income'?'#dcfce7':'#fde8e9'};color:${t.type==='income'?'#166534':'#991b1b'}">${t.type}</span></td>
+      <td>${escHtml(t.category)}</td>
+      <td style="text-align:right;font-weight:700;color:${t.type==='income'?'#059669':'#dc2626'}">${t.type==='income'?'+':'-'}KSh ${parseFloat(t.amount).toLocaleString('en-KE',{minimumFractionDigits:2})}</td>
+      <td style="color:#888">${escHtml(t.description||'—')}</td>
+    </tr>`).join('');
+    const win=window.open('','_blank','width=900,height=700');
+    if(!win){alert('Pop-up blocked. Please allow pop-ups for this page.');return;}
+    win.document.write(`<!DOCTYPE html><html><head><title>Finance Report — ${monthName}</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:'DM Sans',sans-serif;color:#0f0e17;padding:40px;background:#fff}
+      h1{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+      .sub{color:#888;font-size:14px;margin-bottom:28px}
+      .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+      .sum-box{padding:20px;border-radius:12px;text-align:center;border:1px solid #e8e4db}
+      .sum-box .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa;margin-bottom:8px}
+      .sum-box .amount{font-family:'Playfair Display',serif;font-size:24px;font-weight:700}
+      .income .amount{color:#059669}.expense .amount{color:#dc2626}.balance .amount{color:${bal>=0?'#059669':'#dc2626'}}
+      table{width:100%;border-collapse:collapse}
+      th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;padding:10px 12px;border-bottom:2px solid #e8e4db}
+      td{padding:10px 12px;border-bottom:1px solid #f0ece4;font-size:13px}
+      tr:last-child td{border-bottom:none}
+      .footer{margin-top:32px;font-size:12px;color:#aaa;text-align:center}
+      @media print{body{padding:20px}}
+    </style></head><body>
+    <h1>💰 Finance Report</h1>
+    <div class="sub">EduNest · ${monthName} · Generated ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+    <div class="summary">
+      <div class="sum-box income"><div class="label">Total Income</div><div class="amount">KSh ${income.toLocaleString('en-KE',{minimumFractionDigits:2})}</div></div>
+      <div class="sum-box expense"><div class="label">Total Expenses</div><div class="amount">KSh ${expense.toLocaleString('en-KE',{minimumFractionDigits:2})}</div></div>
+      <div class="sum-box balance"><div class="label">Net Balance</div><div class="amount">${bal>=0?'':'−'}KSh ${Math.abs(bal).toLocaleString('en-KE',{minimumFractionDigits:2})}</div></div>
+    </div>
+    <table><thead><tr><th>Date</th><th>Type</th><th>Category</th><th style="text-align:right">Amount</th><th>Description</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="5" style="text-align:center;color:#aaa;padding:30px">No transactions this month</td></tr>'}</tbody></table>
+    <div class="footer">EduNest Student Management System · Printed ${new Date().toLocaleString()}</div>
+    <script>window.onload=()=>setTimeout(()=>window.print(),400);<\/script>
+    </body></html>`);
+    win.document.close();
+  }
+
+  function escHtml(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'';};
+  function formatDate(d){return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});}
+
+  document.getElementById('budgetModal').addEventListener('click',e=>{if(e.target.classList.contains('modal'))closeBudgetModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBudgetModal();});
+
+  init();
+</script>
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

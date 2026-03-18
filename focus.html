@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — Focus & Meditation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0f0e17;--cream:#fffcf5;--gold:#e8b84b;
+  --teal:#2dd4bf;--teal-dark:#0d9488;
+  --violet:#7c3aed;--rose:#f43f5e;
+  --border:#e8e4db;--card:#fff;--bg:#f0f4f8;
+  --focus-bg:#0f1923;--med-bg:#0d0d1a;
+}
+body{font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh;background:var(--bg);transition:background .6s}
+body.focus-mode{background:var(--focus-bg);color:#e2e8f0}
+body.med-mode{background:var(--med-bg);color:#e2e8f0}
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
+nav{background:var(--ink);padding:0 28px;display:flex;align-items:center;gap:12px;height:60px;position:sticky;top:0;z-index:300;box-shadow:0 2px 20px rgba(0,0,0,.3)}
+.back{color:rgba(255,255,255,.6);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;transition:.2s}
+.back:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;margin-right:auto}
+.nav-mode-btns{display:flex;gap:6px}
+.nmode{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.6);transition:.2s;font-family:'DM Sans',sans-serif}
+.nmode:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+.nmode.active{color:#fff}
+.nmode.focus.active{background:#1d4ed8;border-color:#3b82f6}
+.nmode.med.active{background:#5b21b6;border-color:#8b5cf6}
+
+/* ═══════════════════════════════════════════
+   MAIN TABS
+═══════════════════════════════════════════ */
+.main-tabs{background:white;border-bottom:1.5px solid var(--border);padding:0 28px;display:flex;gap:2px;position:sticky;top:60px;z-index:200}
+.main-tab{padding:13px 22px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;border:none;color:#888;border-bottom:2.5px solid transparent;transition:.2s;font-family:'DM Sans',sans-serif}
+.main-tab:hover{color:var(--ink)}
+.main-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.tab-sec{display:none}.tab-sec.active{display:block}
+
+.main-wrap{max-width:1300px;margin:0 auto;padding:32px;display:grid;gap:28px}
+
+/* ═══════════════════════════════════════════
+   FOCUS TODO — LAYOUT
+═══════════════════════════════════════════ */
+.focus-layout{display:grid;grid-template-columns:1fr 360px;gap:28px}
+
+/* ── Focus header ── */
+.focus-header{background:linear-gradient(135deg,#1e3a5f 0%,#1a2744 100%);border-radius:20px;padding:32px 36px;color:white;position:relative;overflow:hidden;margin-bottom:0}
+.focus-header::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(59,130,246,.2),transparent 70%);border-radius:50%}
+.focus-header::after{content:'';position:absolute;bottom:-40px;left:20%;width:200px;height:200px;background:radial-gradient(circle,rgba(45,212,191,.15),transparent 70%);border-radius:50%}
+.fh-inner{position:relative;z-index:1}
+.fh-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--teal);margin-bottom:10px}
+.fh-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;margin-bottom:6px}
+.fh-sub{font-size:14px;color:rgba(255,255,255,.55);margin-bottom:24px}
+.fh-stats{display:flex;gap:20px;flex-wrap:wrap}
+.fh-stat{text-align:center;background:rgba(255,255,255,.08);padding:12px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.1)}
+.fh-stat .n{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--teal)}
+.fh-stat .l{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.45);margin-top:2px}
+
+/* ── Pomodoro Timer ── */
+.pomodoro{background:white;border-radius:20px;border:1.5px solid var(--border);overflow:hidden}
+.pom-header{padding:18px 22px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pom-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700}
+.pom-modes{display:flex;gap:4px}
+.pom-mode{padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:white;transition:.2s}
+.pom-mode.active{background:var(--ink);color:white;border-color:var(--ink)}
+.pom-body{padding:28px;text-align:center}
+.pom-circle{width:180px;height:180px;margin:0 auto 24px;position:relative}
+.pom-circle svg{transform:rotate(-90deg)}
+.pom-circle .track{fill:none;stroke:#f0ece4;stroke-width:8}
+.pom-circle .prog{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.pom-circle .prog.work{stroke:#3b82f6}
+.pom-circle .prog.short{stroke:#10b981}
+.pom-circle .prog.long{stroke:#8b5cf6}
+.pom-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pom-time .t{font-family:'DM Mono',monospace;font-size:38px;font-weight:500;color:var(--ink);letter-spacing:2px}
+.pom-time .phase{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#aaa;margin-top:4px}
+.pom-controls{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.pom-btn{width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;font-size:18px;transition:.25s;display:flex;align-items:center;justify-content:center}
+.pom-btn.play{background:var(--ink);color:white;box-shadow:0 4px 16px rgba(15,14,23,.25)}
+.pom-btn.play:hover{background:#2a2930;transform:scale(1.06)}
+.pom-btn.reset{background:#f5f3ef;color:var(--ink)}
+.pom-btn.reset:hover{background:#e8e4db}
+.pom-btn.skip{background:#eaf0fe;color:#3730a3}
+.pom-btn.skip:hover{background:#dbeafe}
+.pom-sessions{font-size:12px;color:#aaa;display:flex;gap:6px;align-items:center;justify-content:center}
+.session-dot{width:10px;height:10px;border-radius:50%;background:#e8e4db;transition:.3s}
+.session-dot.done{background:#3b82f6}
+.pom-custom{padding:0 22px 22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.pom-set{text-align:center}
+.pom-set label{display:block;font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.pom-set input{width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Mono',monospace;font-size:14px;text-align:center;outline:none;transition:.2s}
+.pom-set input:focus{border-color:var(--ink)}
+
+/* ── Todo list ── */
+.todo-panel{background:white;border-radius:20px;border:1.5px solid var(--border);overflow:hidden}
+.todo-header{padding:20px 24px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.todo-filters{padding:12px 20px;display:flex;gap:7px;border-bottom:1.5px solid var(--border);flex-wrap:wrap}
+.tf-btn{padding:5px 14px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;transition:.2s}
+.tf-btn.active{background:var(--ink);color:white;border-color:var(--ink)}
+
+/* Add task row */
+.add-task-row{padding:16px 20px;border-bottom:1.5px solid var(--border);display:flex;gap:10px;align-items:center}
+.add-task-row input{flex:1;padding:11px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:.2s}
+.add-task-row input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(15,14,23,.05)}
+.add-task-row select{padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:white;cursor:pointer}
+.add-btn{width:42px;height:42px;border-radius:50%;background:var(--ink);color:white;border:none;font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
+.add-btn:hover{background:#2a2930;transform:scale(1.08)}
+
+/* Task items */
+.todo-list{padding:12px 16px;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto}
+.todo-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border);background:white;transition:.25s;animation:slideIn .25s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.todo-item:hover{border-color:#c0bdb6;box-shadow:0 3px 12px rgba(0,0,0,.06)}
+.todo-item.done{opacity:.55}
+.todo-item.done .todo-text{text-decoration:line-through;color:#aaa}
+.todo-check{width:22px;height:22px;border-radius:6px;border:2px solid #d0cdc5;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;font-size:12px}
+.todo-check.checked{background:var(--teal-dark);border-color:var(--teal-dark);color:white}
+.todo-check:hover{border-color:var(--teal-dark)}
+.todo-text{flex:1;font-size:14px;font-weight:500}
+.todo-tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px}
+.todo-tag.work{background:#dbeafe;color:#1e40af}
+.todo-tag.study{background:#dcfce7;color:#166534}
+.todo-tag.personal{background:#fce7f3;color:#9d174d}
+.todo-tag.health{background:#fef9c3;color:#854d0e}
+.focus-this{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+.focus-this:hover{background:#eaf0fe;border-color:#a5b4fc}
+.focus-this.active-task{background:#eaf0fe;border-color:#3b82f6}
+.del-todo{width:28px;height:28px;border-radius:7px;border:none;background:transparent;cursor:pointer;color:#ccc;font-size:16px;transition:.2s;flex-shrink:0}
+.del-todo:hover{background:#fde8e9;color:#b91c1c}
+.empty-todo{text-align:center;padding:40px 20px;color:#bbb}
+.empty-todo .icon{font-size:40px;margin-bottom:10px}
+
+/* Active focus task banner */
+.focus-task-banner{background:linear-gradient(135deg,#1e3a5f,#1a2744);border-radius:14px;padding:16px 20px;margin:0 16px 12px;display:none;align-items:center;gap:12px;color:white;border:1px solid rgba(59,130,246,.3)}
+.focus-task-banner.show{display:flex}
+.ftb-dot{width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ftb-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#93c5fd;margin-bottom:2px}
+.ftb-task{font-weight:600;font-size:14px}
+
+/* ═══════════════════════════════════════════
+   MEDITATION
+═══════════════════════════════════════════ */
+.med-wrap{background:linear-gradient(180deg,#0d0d1a 0%,#1a0d2e 50%,#0d1a1a 100%);border-radius:24px;overflow:hidden;min-height:80vh;position:relative}
+.stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.star{position:absolute;border-radius:50%;background:white;animation:twinkle var(--d,3s) var(--delay,0s) infinite}
+@keyframes twinkle{0%,100%{opacity:var(--op,.8);transform:scale(1)}50%{opacity:.1;transform:scale(.6)}}
+
+.med-inner{position:relative;z-index:1;padding:40px 32px}
+.med-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px}
+.med-heading{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:white}
+.med-sub{font-size:14px;color:rgba(255,255,255,.45);margin-top:6px}
+
+/* Breathing orb */
+.orb-section{display:flex;flex-direction:column;align-items:center;margin-bottom:48px}
+.orb-wrap{position:relative;width:220px;height:220px;margin-bottom:20px}
+.orb{width:220px;height:220px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(139,92,246,.6),rgba(45,212,191,.3),rgba(13,13,26,.8));
+  box-shadow:0 0 60px rgba(139,92,246,.3),0 0 120px rgba(45,212,191,.15),inset 0 0 40px rgba(139,92,246,.2);
+  transition:transform 4s ease-in-out,box-shadow 4s ease-in-out;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.orb.breathe-in{transform:scale(1.35);box-shadow:0 0 100px rgba(139,92,246,.5),0 0 200px rgba(45,212,191,.25),inset 0 0 60px rgba(139,92,246,.3)}
+.orb.breathe-hold{transform:scale(1.35)}
+.orb.breathe-out{transform:scale(.85);box-shadow:0 0 30px rgba(139,92,246,.15),0 0 60px rgba(45,212,191,.08)}
+.orb-glow{position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.15),transparent 70%);animation:orbGlow 6s infinite;pointer-events:none}
+@keyframes orbGlow{0%,100%{opacity:.6}50%{opacity:1}}
+.orb-text{font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:rgba(255,255,255,.7);text-align:center;letter-spacing:.5px}
+.breathe-label{font-size:18px;font-weight:300;color:rgba(255,255,255,.7);text-align:center;letter-spacing:3px;text-transform:uppercase;height:28px;margin-bottom:6px}
+.breathe-count{font-family:'DM Mono',monospace;font-size:40px;color:white;text-align:center;margin-bottom:6px}
+.breathe-cycle{font-size:12px;color:rgba(255,255,255,.35);text-align:center;letter-spacing:1.5px;text-transform:uppercase}
+.breathe-controls{display:flex;gap:12px;justify-content:center;margin-top:20px}
+.b-btn{padding:10px 24px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:.25s;border:1.5px solid rgba(255,255,255,.2);font-family:'DM Sans',sans-serif}
+.b-btn.start{background:rgba(139,92,246,.3);color:white;border-color:rgba(139,92,246,.5)}
+.b-btn.start:hover{background:rgba(139,92,246,.5)}
+.b-btn.stop{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+.b-btn.stop:hover{background:rgba(239,68,68,.3)}
+.b-btn.ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.6)}
+.b-btn.ghost:hover{background:rgba(255,255,255,.15);color:white}
+
+/* Breathing patterns */
+.breathe-patterns{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.bp-btn{padding:7px 16px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.55);transition:.2s;font-family:'DM Sans',sans-serif}
+.bp-btn:hover{color:white;border-color:rgba(255,255,255,.35)}
+.bp-btn.active{background:rgba(139,92,246,.3);border-color:rgba(139,92,246,.6);color:white}
+
+/* Sound cards */
+.sounds-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:white;margin-bottom:6px}
+.sounds-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px}
+.sounds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;margin-bottom:32px}
+.sound-card{border-radius:16px;padding:18px 16px;cursor:pointer;transition:.3s;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);text-align:center;position:relative;overflow:hidden}
+.sound-card:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.1);transform:translateY(-3px)}
+.sound-card.playing{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.15)}
+.sound-card.playing::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(139,92,246,.12),transparent 70%)}
+.sc-icon{font-size:36px;margin-bottom:10px;display:block}
+.sc-name{font-weight:700;font-size:13px;color:white;margin-bottom:4px}
+.sc-desc{font-size:11px;color:rgba(255,255,255,.4);line-height:1.4}
+.sc-wave{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:none;gap:2px;align-items:flex-end;height:16px}
+.sound-card.playing .sc-wave{display:flex}
+.sc-wave span{width:3px;border-radius:2px;background:rgba(139,92,246,.8);animation:wave var(--d,.5s) var(--delay,0s) infinite alternate}
+@keyframes wave{from{height:3px}to{height:var(--h,12px)}}
+
+/* Volume & mix */
+.sound-controls{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px 24px;margin-bottom:28px}
+.sc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sc-header-title{font-size:13px;font-weight:700;color:rgba(255,255,255,.7)}
+.master-vol{display:flex;align-items:center;gap:10px}
+.master-vol span{font-size:12px;color:rgba(255,255,255,.45)}
+.vol-slider{width:100px;height:4px;cursor:pointer;accent-color:#8b5cf6;border-radius:2px}
+.active-sounds{display:flex;flex-direction:column;gap:10px;min-height:20px}
+.active-sound-row{display:flex;align-items:center;gap:10px}
+.as-icon{font-size:18px;flex-shrink:0}
+.as-name{font-size:13px;color:rgba(255,255,255,.7);font-weight:600;min-width:100px}
+.as-vol{flex:1;height:4px;cursor:pointer;accent-color:#8b5cf6}
+.as-stop{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:16px;transition:.2s;padding:3px}
+.as-stop:hover{color:#fca5a5}
+.no-sounds{font-size:13px;color:rgba(255,255,255,.25);text-align:center;padding:8px}
+
+/* Meditation timer */
+.med-timer-section{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:22px 24px;margin-bottom:24px}
+.mt-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.mt-title{font-size:13px;font-weight:700;color:rgba(255,255,255,.7)}
+.duration-btns{display:flex;gap:6px;flex-wrap:wrap}
+.dur-btn{padding:6px 14px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:rgba(255,255,255,.55);transition:.2s;font-family:'DM Sans',sans-serif}
+.dur-btn:hover{color:white;border-color:rgba(255,255,255,.3)}
+.dur-btn.active{background:rgba(139,92,246,.3);border-color:rgba(139,92,246,.5);color:white}
+.med-timer-display{text-align:center;padding:12px 0}
+.mt-time{font-family:'DM Mono',monospace;font-size:52px;font-weight:400;color:white;letter-spacing:4px}
+.mt-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.3);margin-top:6px}
+.mt-progress{height:4px;background:rgba(255,255,255,.1);border-radius:10px;margin:16px 0;overflow:hidden}
+.mt-fill{height:100%;background:linear-gradient(90deg,#8b5cf6,#2dd4bf);border-radius:10px;transition:width .5s linear;width:0%}
+.mt-controls{display:flex;gap:10px;justify-content:center}
+
+/* Quotes */
+.quote-section{background:rgba(255,255,255,.04);border-radius:14px;padding:22px 24px;border:1px solid rgba(255,255,255,.08);margin-bottom:24px;text-align:center}
+.quote-text{font-family:'Playfair Display',serif;font-size:17px;font-style:italic;color:rgba(255,255,255,.75);line-height:1.7;margin-bottom:12px}
+.quote-author{font-size:12px;color:rgba(255,255,255,.35);letter-spacing:1px}
+.quote-next{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);padding:6px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:.2s;margin-top:8px}
+.quote-next:hover{color:white;border-color:rgba(255,255,255,.35)}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+/* ── Pomodoro transition toast ── */
+.pom-toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:var(--ink);color:white;padding:14px 28px;border-radius:14px;
+  font-size:14px;font-weight:600;z-index:9999;opacity:0;pointer-events:none;
+  transition:opacity .4s,transform .4s;box-shadow:0 8px 32px rgba(0,0,0,.35);
+  display:flex;align-items:center;gap:10px;white-space:nowrap}
+.pom-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.pom-toast.work{background:#1d4ed8}
+.pom-toast.short{background:#059669}
+.pom-toast.long{background:#7c3aed}
+.pom-toast .toast-icon{font-size:20px}
+
+/* ── Session complete glow on ring ── */
+@keyframes ringPulse{0%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 12px rgba(16,185,129,.7))}100%{filter:drop-shadow(0 0 0 transparent)}}
+.pom-circle.complete svg{animation:ringPulse 1s ease 3}
+
+@media(max-width:900px){
+  .focus-layout{grid-template-columns:1fr}
+  .main-wrap{padding:16px}
+  .main-tabs{top:60px}
+}
+</style>
+</head>
+<body>
+<div class="pom-toast" id="pomToast"><span class="toast-icon" id="toastIcon">🎉</span><span id="toastMsg">Time's up!</span></div>
+<nav>
+  <a href="portal.html" class="back">← Dashboard</a>
+  <div class="nav-title">🧘 Focus & Meditation</div>
+  <a href="study.html" style="color:rgba(255,255,255,.75);text-decoration:none;font-size:13px;font-weight:600;padding:8px 16px;border-radius:20px;border:1.5px solid rgba(255,255,255,.2);transition:.2s;white-space:nowrap" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='transparent'">📚 Study Area →</a>
+  <div class="nav-mode-btns">
+    <button class="nmode focus" onclick="setMode('focus')">🎯 Focus Mode</button>
+    <button class="nmode med" onclick="setMode('med')">🌙 Zen Mode</button>
+    <button class="nmode" onclick="setMode('normal')">☀ Normal</button>
+  </div>
+</nav>
+
+<div class="main-tabs">
+  <button class="main-tab active" onclick="switchTab('focus',this)">🎯 Focus & Todo</button>
+  <button class="main-tab" onclick="switchTab('med',this)">🧘 Meditation</button>
+</div>
+
+<!-- ═══════════ FOCUS TAB ═══════════ -->
+<div class="tab-sec active" id="secFocus">
+  <div class="main-wrap">
+
+    <!-- Header strip -->
+    <div class="focus-header">
+      <div class="fh-inner">
+        <div class="fh-tag">✦ Focus Session</div>
+        <div class="fh-title">Deep Work, Deep Rest.</div>
+        <div class="fh-sub">Use the Pomodoro timer to work in focused sprints. Track every task you complete.</div>
+        <div class="fh-stats">
+          <div class="fh-stat"><div class="n" id="statDone">0</div><div class="l">Done today</div></div>
+          <div class="fh-stat"><div class="n" id="statPending">0</div><div class="l">Remaining</div></div>
+          <div class="fh-stat"><div class="n" id="statSessions">0</div><div class="l">Pomodoros</div></div>
+          <div class="fh-stat"><div class="n" id="statStreak">0🔥</div><div class="l">Day streak</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="focus-layout">
+      <!-- Left: todo -->
+      <div>
+        <div class="todo-panel">
+          <div class="todo-header">
+            <div>
+              <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700">Focus Todo</div>
+              <div style="font-size:12px;color:#aaa;margin-top:2px" id="todoSubtitle">Loading...</div>
+            </div>
+            <button onclick="clearCompleted()" style="font-size:12px;color:#aaa;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 10px;border-radius:8px;transition:.2s" onmouseover="this.style.background='#f5f3ef'" onmouseout="this.style.background='none'">🧹 Clear done</button>
+          </div>
+          <div class="todo-filters">
+            <button class="tf-btn active" onclick="setTodoFilter('all',this)">All</button>
+            <button class="tf-btn" onclick="setTodoFilter('todo',this)">Todo</button>
+            <button class="tf-btn" onclick="setTodoFilter('done',this)">Done ✓</button>
+            <button class="tf-btn" onclick="setTodoFilter('work',this)">💼 Work</button>
+            <button class="tf-btn" onclick="setTodoFilter('study',this)">📗 Study</button>
+            <button class="tf-btn" onclick="setTodoFilter('personal',this)">🏠 Personal</button>
+          </div>
+          <div class="focus-task-banner" id="focusBanner">
+            <div class="ftb-dot"></div>
+            <div><div class="ftb-label">Now focusing on</div><div class="ftb-task" id="bannerTask">—</div></div>
+          </div>
+          <div class="add-task-row">
+            <input type="text" id="newTodoInput" placeholder="What do you need to do? Press Enter to add..." onkeydown="if(event.key==='Enter')addTodo()">
+            <select id="newTodoTag">
+              <option value="work">💼 Work</option>
+              <option value="study">📗 Study</option>
+              <option value="personal">🏠 Personal</option>
+              <option value="health">💛 Health</option>
+            </select>
+            <button class="add-btn" onclick="addTodo()" title="Add task">+</button>
+          </div>
+          <div class="todo-list" id="todoList">
+            <div class="empty-todo"><div class="icon">✅</div><p>All clear! Add a task to get focused.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: pomodoro -->
+      <div>
+        <div class="pomodoro">
+          <div class="pom-header">
+            <div class="pom-title">⏱ Pomodoro</div>
+            <div class="pom-modes">
+              <button class="pom-mode active" onclick="setPomMode('work',this)">Work</button>
+              <button class="pom-mode" onclick="setPomMode('short',this)">Short Break</button>
+              <button class="pom-mode" onclick="setPomMode('long',this)">Long Break</button>
+            </div>
+          </div>
+          <div class="pom-body">
+            <div class="pom-circle">
+              <svg width="180" height="180" viewBox="0 0 180 180">
+                <circle class="track" cx="90" cy="90" r="82"/>
+                <circle class="prog" id="pomProg" cx="90" cy="90" r="82"
+                  stroke-dasharray="515" stroke-dashoffset="0"/>
+              </svg>
+              <div class="pom-time">
+                <div class="t" id="pomDisplay">25:00</div>
+                <div class="phase" id="pomPhase">Work</div>
+              </div>
+            </div>
+            <div class="pom-controls">
+              <button class="pom-btn reset" onclick="resetPom()" title="Reset">↺</button>
+              <button class="pom-btn play" id="pomPlayBtn" onclick="togglePom()" title="Play/Pause">▶</button>
+              <button class="pom-btn skip" onclick="skipPom()" title="Skip">⏭</button>
+            </div>
+            <div class="pom-sessions" id="pomSessions">
+              <span style="font-size:11px;color:#aaa;letter-spacing:.5px">Sessions:</span>
+            </div>
+          </div>
+          <div class="pom-custom">
+            <div class="pom-set"><label>Work (min)</label><input type="number" id="setWork" value="25" min="1" max="90" onchange="updatePomSettings()"></div>
+            <div class="pom-set"><label>Short Break</label><input type="number" id="setShort" value="5" min="1" max="30" onchange="updatePomSettings()"></div>
+            <div class="pom-set"><label>Long Break</label><input type="number" id="setLong" value="15" min="5" max="60" onchange="updatePomSettings()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MEDITATION TAB ═══════════ -->
+<div class="tab-sec" id="secMed">
+  <div class="main-wrap" style="grid-template-columns:1fr">
+    <div class="med-wrap">
+      <!-- Stars -->
+      <div class="stars" id="starsContainer"></div>
+      <div class="med-inner">
+
+        <div class="med-top">
+          <div>
+            <div class="med-heading">Mindfulness Space</div>
+            <div class="med-sub">Breathe. Be present. Let go.</div>
+          </div>
+        </div>
+
+        <!-- Quote -->
+        <div class="quote-section">
+          <div class="quote-text" id="quoteText">"Almost everything will work again if you unplug it for a few minutes — including you."</div>
+          <div class="quote-author" id="quoteAuthor">— Anne Lamott</div>
+          <button class="quote-next" onclick="nextQuote()">Next quote →</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start" class="med-grid">
+
+          <!-- LEFT: Breathing + Timer -->
+          <div>
+            <!-- Breathing exercise -->
+            <div style="text-align:center;margin-bottom:32px">
+              <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:white;margin-bottom:6px">Breathing Guide</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px">Choose a pattern and tap the orb to begin</div>
+              <div class="breathe-patterns">
+                <button class="bp-btn active" onclick="setBreathPattern('box',this)" data-pattern="box">Box (4-4-4-4)</button>
+                <button class="bp-btn" onclick="setBreathPattern('478',this)" data-pattern="478">4-7-8</button>
+                <button class="bp-btn" onclick="setBreathPattern('deep',this)" data-pattern="deep">Deep (5-5)</button>
+                <button class="bp-btn" onclick="setBreathPattern('calm',this)" data-pattern="calm">Calm (6-2-7)</button>
+              </div>
+              <div class="orb-section">
+                <div class="orb-wrap">
+                  <div class="orb-glow"></div>
+                  <div class="orb" id="breathOrb" onclick="toggleBreathing()">
+                    <div class="orb-text" id="orbInnerText">Tap to<br>begin</div>
+                  </div>
+                </div>
+                <div class="breathe-label" id="breatheLabel"></div>
+                <div class="breathe-count" id="breatheCount"></div>
+                <div class="breathe-cycle" id="breatheCycle"></div>
+              </div>
+              <div class="breathe-controls">
+                <button class="b-btn start" id="breathStartBtn" onclick="toggleBreathing()">▶ Start Breathing</button>
+                <button class="b-btn ghost" onclick="resetBreathing()">Reset</button>
+              </div>
+            </div>
+
+            <!-- Meditation timer -->
+            <div class="med-timer-section">
+              <div class="mt-header">
+                <div class="mt-title">🕐 Meditation Timer</div>
+                <div class="duration-btns">
+                  <button class="dur-btn active" onclick="setMedDur(5,this)">5 min</button>
+                  <button class="dur-btn" onclick="setMedDur(10,this)">10 min</button>
+                  <button class="dur-btn" onclick="setMedDur(15,this)">15 min</button>
+                  <button class="dur-btn" onclick="setMedDur(20,this)">20 min</button>
+                  <button class="dur-btn" onclick="setMedDur(30,this)">30 min</button>
+                </div>
+              </div>
+              <div class="med-timer-display">
+                <div class="mt-time" id="medTimerDisplay">05:00</div>
+                <div class="mt-label" id="medTimerLabel">Ready to begin</div>
+              </div>
+              <div class="mt-progress"><div class="mt-fill" id="medTimerFill"></div></div>
+              <div class="mt-controls">
+                <button class="b-btn start" id="medTimerBtn" onclick="toggleMedTimer()">▶ Begin Session</button>
+                <button class="b-btn ghost" onclick="resetMedTimer()">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: Sounds -->
+          <div>
+            <div class="sounds-title">🎵 Ambient Soundscapes</div>
+            <div class="sounds-sub">Select a soundscape to set the mood. One sound plays at a time — click another to switch.</div>
+
+            <div class="sounds-grid" id="soundsGrid"></div>
+
+            <!-- Mix controls -->
+            <div class="sound-controls">
+              <div class="sc-header">
+                <div class="sc-header-title">🎵 Now Playing</div>
+                <div class="master-vol">
+                  <span>🔊 Master</span>
+                  <input type="range" class="vol-slider" id="masterVol" min="0" max="1" step="0.05" value="0.7" oninput="updateMasterVol(this.value)">
+                  <span id="masterVolPct">70%</span>
+                </div>
+              </div>
+              <div class="active-sounds" id="activeSoundsList">
+                <div class="no-sounds">No sounds playing. Select sounds above.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+let todos = JSON.parse(localStorage.getItem('focus_todos')||'[]');
+let pomTotalToday = 0;
+let activeFocusTask = null;
+let todoFilter = 'all';
+
+function today(){ return new Date().toISOString().slice(0,10); }
+
+// Restore today's pomodoro count
+(function(){
+  if(localStorage.getItem('pom_date')===today()){
+    pomTotalToday=parseInt(localStorage.getItem('pom_sessions_today')||'0');
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════
+// UI MODES & TABS
+// ═══════════════════════════════════════════════════════════
+function setMode(m){
+  document.body.className = m==='focus'?'focus-mode':m==='med'?'med-mode':'';
+}
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec'+id.charAt(0).toUpperCase()+id.slice(1)).classList.add('active');
+  btn.classList.add('active');
+  if(id==='med'){ generateStars(); initSounds(); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TODO
+// ═══════════════════════════════════════════════════════════
+function saveTodos(){ localStorage.setItem('focus_todos',JSON.stringify(todos)); }
+
+function addTodo(){
+  const inp=document.getElementById('newTodoInput');
+  const text=inp.value.trim(); if(!text)return;
+  const tag=document.getElementById('newTodoTag').value;
+  todos.unshift({id:Date.now(),text,tag,done:false,created:Date.now()});
+  saveTodos(); inp.value=''; renderTodos(); updateStats();
+}
+
+function setTodoFilter(f,btn){
+  todoFilter=f;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTodos();
+}
+
+function renderTodos(){
+  let list=todos;
+  if(todoFilter==='todo') list=todos.filter(t=>!t.done);
+  else if(todoFilter==='done') list=todos.filter(t=>t.done);
+  else if(['work','study','personal','health'].includes(todoFilter)) list=todos.filter(t=>t.tag===todoFilter);
+  const el=document.getElementById('todoList');
+  const done=todos.filter(t=>t.done).length, total=todos.length;
+  document.getElementById('todoSubtitle').textContent=`${done} of ${total} tasks completed`;
+  if(!list.length){el.innerHTML='<div class="empty-todo"><div class="icon">✅</div><p>'+(todoFilter!=='all'?'Nothing here!':'Add your first task above!')+'</p></div>';return;}
+  el.innerHTML=list.map(t=>`
+    <div class="todo-item ${t.done?'done':''}" id="td-${t.id}">
+      <div class="todo-check ${t.done?'checked':''}" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
+      <div class="todo-text">${escHtml(t.text)}</div>
+      <span class="todo-tag ${t.tag}">${tagLabel(t.tag)}</span>
+      <button class="focus-this ${activeFocusTask===t.id?'active-task':''}" onclick="setFocusTask(${t.id})" title="Focus on this task">🎯</button>
+      <button class="del-todo" onclick="deleteTodo(${t.id})" title="Delete">×</button>
+    </div>`).join('');
+}
+
+function toggleTodo(id){
+  const t=todos.find(t=>t.id===id); if(!t)return;
+  t.done=!t.done;
+  if(t.done&&activeFocusTask===id){activeFocusTask=null;updateFocusBanner();}
+  saveTodos(); renderTodos(); updateStats();
+}
+function deleteTodo(id){todos=todos.filter(t=>t.id!==id);if(activeFocusTask===id){activeFocusTask=null;updateFocusBanner();}saveTodos();renderTodos();updateStats();}
+function clearCompleted(){todos=todos.filter(t=>!t.done);saveTodos();renderTodos();updateStats();}
+function setFocusTask(id){
+  activeFocusTask=activeFocusTask===id?null:id;
+  updateFocusBanner(); renderTodos();
+}
+function updateFocusBanner(){
+  const banner=document.getElementById('focusBanner');
+  if(activeFocusTask){
+    const t=todos.find(t=>t.id===activeFocusTask);
+    if(t){banner.classList.add('show');document.getElementById('bannerTask').textContent=t.text;return;}
+  }
+  banner.classList.remove('show');
+}
+function tagLabel(t){return{work:'💼 Work',study:'📗 Study',personal:'🏠 Personal',health:'💛 Health'}[t]||t;}
+function updateStats(){
+  const done=todos.filter(t=>t.done).length;
+  const pending=todos.filter(t=>!t.done).length;
+  document.getElementById('statDone').textContent=done;
+  document.getElementById('statPending').textContent=pending;
+  document.getElementById('statSessions').textContent=pomTotalToday;
+  const streak=parseInt(localStorage.getItem('focus_streak')||'0');
+  document.getElementById('statStreak').textContent=streak+'🔥';
+}
+
+// ═══════════════════════════════════════════════════════════
+// POMODORO
+// Cycle: work → short break → work → short break →
+//        work → short break → work → LONG break → repeat
+// pomWorksDone counts completed work sessions.
+// After every 4th work session → long break.
+// Otherwise → short break.
+// After any break → back to work.
+// ═══════════════════════════════════════════════════════════
+let pomInterval=null, pomRunning=false, pomMode='work';
+let pomSettings={work:25,short:5,long:15};
+let pomTimeLeft=25*60, pomTotalTime=25*60;
+let pomWorksDone=0; // completed work sessions this run
+
+const CIRC=2*Math.PI*82;
+document.getElementById('pomProg').style.strokeDasharray=CIRC;
+
+function setPomMode(m, btn){
+  // Stop any running timer first
+  if(pomRunning){ clearInterval(pomInterval); pomRunning=false; }
+  pomMode=m;
+  // Highlight the correct mode button
+  document.querySelectorAll('.pom-mode').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else {
+    const idx={work:0,short:1,long:2}[m];
+    document.querySelectorAll('.pom-mode')[idx].classList.add('active');
+  }
+  // Set time
+  const mins={work:pomSettings.work,short:pomSettings.short,long:pomSettings.long}[m];
+  pomTimeLeft=mins*60; pomTotalTime=mins*60;
+  document.getElementById('pomPhase').textContent={work:'Work',short:'Short Break',long:'Long Break'}[m];
+  document.getElementById('pomProg').className='prog '+m;
+  document.getElementById('pomPlayBtn').textContent='▶';
+  updatePomDisplay(); updatePomRing();
+}
+
+function updatePomSettings(){
+  pomSettings.work=Math.max(1,parseInt(document.getElementById('setWork').value)||25);
+  pomSettings.short=Math.max(1,parseInt(document.getElementById('setShort').value)||5);
+  pomSettings.long=Math.max(1,parseInt(document.getElementById('setLong').value)||15);
+  if(!pomRunning) setPomMode(pomMode);
+}
+
+function togglePom(){
+  if(pomRunning){
+    clearInterval(pomInterval);
+    pomRunning=false;
+    document.getElementById('pomPlayBtn').textContent='▶';
+  } else {
+    pomRunning=true;
+    document.getElementById('pomPlayBtn').textContent='⏸';
+    pomInterval=setInterval(()=>{
+      pomTimeLeft--;
+      updatePomDisplay();
+      updatePomRing();
+      if(pomTimeLeft<=0){
+        clearInterval(pomInterval);
+        pomRunning=false;
+        document.getElementById('pomPlayBtn').textContent='▶';
+        onPomComplete();
+      }
+    },1000);
+  }
+}
+
+function resetPom(){
+  clearInterval(pomInterval);
+  pomRunning=false;
+  setPomMode(pomMode);
+}
+
+function skipPom(){
+  clearInterval(pomInterval);
+  pomRunning=false;
+  onPomComplete();
+}
+
+function onPomComplete(){
+  if(pomMode==='work'){
+    // Completed a work session
+    pomWorksDone++;
+    pomTotalToday++;
+    localStorage.setItem('pom_sessions_today', String(pomTotalToday));
+    localStorage.setItem('pom_date', today());
+    updateStats();
+    renderSessionDots();
+
+    // Decide next break: long after every 4th work session, short otherwise
+    const isLongBreak = (pomWorksDone % 4 === 0);
+    const nextMode = isLongBreak ? 'long' : 'short';
+
+    // Play the rich 3-second completion bell
+    playCompletionBell();
+
+    // Show toast notification
+    if(isLongBreak){
+      showToast('long','🏆',`Great work! 4 sessions done — take a long break (${pomSettings.long} min)`);
+    } else {
+      showToast('short','☕',`Session ${pomWorksDone} done — short break time! (${pomSettings.short} min)`);
+    }
+
+    // Auto-switch to break after bell finishes (3.2s)
+    setTimeout(()=> setPomMode(nextMode), 3200);
+
+  } else {
+    // Break completed — go back to work
+    playTransitionChime();
+    showToast('work','🎯',`Break over! Time to focus (${pomSettings.work} min)`);
+    setTimeout(()=> setPomMode('work'), 3200);
+  }
+}
+
+function updatePomDisplay(){
+  const m=Math.floor(pomTimeLeft/60), s=pomTimeLeft%60;
+  const str=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('pomDisplay').textContent=str;
+  const phase={work:'🎯 Work',short:'☕ Break',long:'🌿 Long Break'}[pomMode]||'';
+  document.title=`${str} ${phase} — EduNest Focus`;
+}
+
+function updatePomRing(){
+  const pct=pomTimeLeft/pomTotalTime;
+  document.getElementById('pomProg').style.strokeDashoffset=CIRC*(1-pct);
+}
+
+function renderSessionDots(){
+  const el=document.getElementById('pomSessions');
+  // Show up to 8 dots, marking progress toward next long break
+  const inCycle = pomWorksDone % 4; // 0-3 within current group of 4
+  const display = inCycle === 0 && pomWorksDone > 0 ? 4 : inCycle;
+  let dots='';
+  for(let i=0;i<4;i++){
+    dots+=`<div class="session-dot ${i<display?'done':''}"></div>`;
+  }
+  el.innerHTML=`<span style="font-size:11px;color:#aaa;letter-spacing:.5px">Cycle (${pomWorksDone} total):</span>${dots}<span style="font-size:11px;color:#aaa">→ long break</span>`;
+}
+
+// ── Toast notification ──
+function showToast(type, icon, msg){
+  const toast=document.getElementById('pomToast');
+  toast.className='pom-toast '+type;
+  document.getElementById('toastIcon').textContent=icon;
+  document.getElementById('toastMsg').textContent=msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 4500);
+}
+
+// ── Rich 3-second completion bell (two overlapping notes + reverb tail) ──
+function playCompletionBell(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const now=ctx.currentTime;
+
+    function note(freq, startT, duration, volume){
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.type='sine';
+      osc.frequency.setValueAtTime(freq, startT);
+      gain.gain.setValueAtTime(0, startT);
+      gain.gain.linearRampToValueAtTime(volume, startT+0.04);
+      gain.gain.setValueAtTime(volume, startT+0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, startT+duration);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(startT); osc.stop(startT+duration+0.05);
+    }
+
+    // Three-strike bell sequence over 3 seconds
+    // First strike — bright high note
+    note(880, now,       2.8, 0.45);
+    note(1320, now,      2.2, 0.2);   // overtone
+
+    // Second strike — slightly lower, 1 second later
+    note(784, now+1.0,   2.0, 0.38);
+    note(1175, now+1.0,  1.6, 0.15);
+
+    // Third strike — warm resolution, 2 seconds in
+    note(659, now+2.0,   1.5, 0.30);
+    note(988, now+2.0,   1.2, 0.12);
+
+    // Soft reverb tail using delay node
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    const delay=ctx.createDelay(0.5);
+    delay.delayTime.value=0.25;
+    const fbGain=ctx.createGain(); fbGain.gain.value=0.3;
+    osc.type='sine'; osc.frequency.value=523;
+    gain.gain.setValueAtTime(0,now+0.5);
+    gain.gain.linearRampToValueAtTime(0.08,now+0.55);
+    gain.gain.exponentialRampToValueAtTime(0.001,now+3.2);
+    osc.connect(gain); gain.connect(delay); delay.connect(fbGain); fbGain.connect(delay);
+    gain.connect(ctx.destination);
+    osc.start(now+0.5); osc.stop(now+3.3);
+
+  }catch(e){ console.warn('Bell sound failed:', e); }
+}
+
+// ── Short transition chime for break → work ──
+function playTransitionChime(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const now=ctx.currentTime;
+    [[523,0],[659,0.2],[784,0.4]].forEach(([freq,t])=>{
+      const osc=ctx.createOscillator(); const g=ctx.createGain();
+      osc.type='sine'; osc.frequency.value=freq;
+      g.gain.setValueAtTime(0,now+t);
+      g.gain.linearRampToValueAtTime(0.3,now+t+0.04);
+      g.gain.exponentialRampToValueAtTime(0.001,now+t+1.2);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(now+t); osc.stop(now+t+1.3);
+    });
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════
+// BREATHING EXERCISE
+// ═══════════════════════════════════════════════════════════
+const BREATHE_PATTERNS={
+  box:{name:'Box Breathing',phases:[{l:'Breathe In',d:4},{l:'Hold',d:4},{l:'Breathe Out',d:4},{l:'Hold',d:4}]},
+  '478':{name:'4-7-8',phases:[{l:'Breathe In',d:4},{l:'Hold',d:7},{l:'Breathe Out',d:8}]},
+  deep:{name:'Deep Breathing',phases:[{l:'Breathe In',d:5},{l:'Breathe Out',d:5}]},
+  calm:{name:'Calm Pattern',phases:[{l:'Breathe In',d:6},{l:'Hold',d:2},{l:'Breathe Out',d:7}]},
+};
+let breathPattern='box', breathRunning=false, breathInterval=null;
+let breathPhaseIdx=0, breathCountdown=0, breathCycles=0;
+
+function setBreathPattern(p,btn){
+  if(breathRunning) stopBreathing();
+  breathPattern=p;
+  document.querySelectorAll('.bp-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function toggleBreathing(){ breathRunning?stopBreathing():startBreathing(); }
+function startBreathing(){
+  breathRunning=true;
+  breathPhaseIdx=0; breathCountdown=0; breathCycles=0;
+  document.getElementById('breathStartBtn').textContent='⏸ Pause';
+  document.getElementById('orbInnerText').textContent='';
+  runBreathPhase();
+}
+function runBreathPhase(){
+  if(!breathRunning)return;
+  const phases=BREATHE_PATTERNS[breathPattern].phases;
+  const phase=phases[breathPhaseIdx];
+  const orb=document.getElementById('breathOrb');
+  orb.className='orb';
+  // Apply animation class
+  if(phase.l==='Breathe In'){setTimeout(()=>orb.classList.add('breathe-in'),50);}
+  else if(phase.l==='Breathe Out'){setTimeout(()=>orb.classList.add('breathe-out'),50);}
+  else{orb.classList.add('breathe-hold');}
+  document.getElementById('breatheLabel').textContent=phase.l.toUpperCase();
+  breathCountdown=phase.d;
+  document.getElementById('breatheCount').textContent=breathCountdown;
+  clearInterval(breathInterval);
+  breathInterval=setInterval(()=>{
+    breathCountdown--;
+    document.getElementById('breatheCount').textContent=breathCountdown;
+    if(breathCountdown<=0){
+      clearInterval(breathInterval);
+      breathPhaseIdx++;
+      if(breathPhaseIdx>=phases.length){breathPhaseIdx=0;breathCycles++;}
+      document.getElementById('breatheCycle').textContent=breathCycles?`Cycle ${breathCycles} complete`:'';
+      setTimeout(runBreathPhase,300);
+    }
+  },1000);
+}
+function stopBreathing(){
+  breathRunning=false; clearInterval(breathInterval);
+  document.getElementById('breathOrb').className='orb';
+  document.getElementById('breatheLabel').textContent='';
+  document.getElementById('breatheCount').textContent='';
+  document.getElementById('breathStartBtn').textContent='▶ Start Breathing';
+  document.getElementById('orbInnerText').textContent='Tap to\nbegin';
+}
+function resetBreathing(){ stopBreathing(); breathCycles=0; document.getElementById('breatheCycle').textContent=''; }
+
+// ═══════════════════════════════════════════════════════════
+// MEDITATION TIMER
+// ═══════════════════════════════════════════════════════════
+let medDuration=5*60, medTimeLeft=5*60, medRunning=false, medInterval=null;
+
+function setMedDur(min,btn){
+  if(medRunning) resetMedTimer();
+  medDuration=min*60; medTimeLeft=min*60;
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMedDisplay();
+}
+function toggleMedTimer(){
+  if(medRunning){clearInterval(medInterval);medRunning=false;document.getElementById('medTimerBtn').textContent='▶ Resume Session';document.getElementById('medTimerLabel').textContent='Paused';}
+  else{
+    medRunning=true;document.getElementById('medTimerBtn').textContent='⏸ Pause';
+    document.getElementById('medTimerLabel').textContent='Meditating...';
+    medInterval=setInterval(()=>{
+      medTimeLeft--;updateMedDisplay();
+      if(medTimeLeft<=0){clearInterval(medInterval);medRunning=false;document.getElementById('medTimerBtn').textContent='✅ Session Complete';document.getElementById('medTimerLabel').textContent='Well done! 🙏';document.getElementById('medTimerFill').style.width='100%';playBell();}
+    },1000);
+  }
+}
+function resetMedTimer(){clearInterval(medInterval);medRunning=false;medTimeLeft=medDuration;updateMedDisplay();document.getElementById('medTimerBtn').textContent='▶ Begin Session';document.getElementById('medTimerLabel').textContent='Ready to begin';document.getElementById('medTimerFill').style.width='0%';}
+function updateMedDisplay(){
+  const m=Math.floor(medTimeLeft/60),s=medTimeLeft%60;
+  document.getElementById('medTimerDisplay').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  const pct=medRunning||medTimeLeft<medDuration?((medDuration-medTimeLeft)/medDuration*100):0;
+  document.getElementById('medTimerFill').style.width=pct+'%';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SOUNDS — Web Audio API generated + oscillator-based
+// ═══════════════════════════════════════════════════════════
+const SOUNDS=[
+  {id:'rain',icon:'🌧',name:'Rain',desc:'Gentle rainfall on leaves'},
+  {id:'thunder',icon:'⛈',name:'Thunder Storm',desc:'Rain with distant thunder'},
+  {id:'ocean',icon:'🌊',name:'Ocean Waves',desc:'Rolling waves on shore'},
+  {id:'forest',icon:'🌲',name:'Forest',desc:'Birds and rustling leaves'},
+  {id:'river',icon:'💧',name:'River Stream',desc:'Babbling brook'},
+  {id:'fire',icon:'🔥',name:'Campfire',desc:'Crackling fire'},
+  {id:'wind',icon:'🌬',name:'Wind',desc:'Soft breeze through trees'},
+  {id:'cafe',icon:'☕',name:'Coffee Shop',desc:'Ambient café sounds'},
+  {id:'space',icon:'🌌',name:'Deep Space',desc:'Low cosmic drone'},
+  {id:'tibetan',icon:'🔔',name:'Tibetan Bowls',desc:'Resonant singing bowls'},
+  {id:'binaural',icon:'🧠',name:'Binaural Focus',desc:'Alpha wave tones (40Hz)'},
+  {id:'white',icon:'⬜',name:'White Noise',desc:'Broad spectrum noise'},
+  {id:'brown',icon:'🟫',name:'Brown Noise',desc:'Deep warm rumble'},
+  {id:'pink',icon:'🌸',name:'Pink Noise',desc:'Balanced relaxing hiss'},
+  {id:'night',icon:'🌙',name:'Night Crickets',desc:'Evening insects'},
+  {id:'underwater',icon:'🐋',name:'Underwater',desc:'Deep ocean ambience'},
+];
+
+let audioCtx=null, masterGain=null, soundNodes={}, soundVolumes={};
+
+function getAudioCtx(){
+  if(!audioCtx){
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    masterGain=audioCtx.createGain();
+    masterGain.gain.value=0.7;
+    masterGain.connect(audioCtx.destination);
+  }
+  return audioCtx;
+}
+
+function createSound(id){
+  const ctx=getAudioCtx();
+  let source=null, gainNode=ctx.createGain();
+  gainNode.gain.value=0.5;
+  gainNode.connect(masterGain);
+  soundVolumes[id]=0.5;
+
+  switch(id){
+    case 'rain': source=createNoise(ctx,'white',0.3); addFilter(ctx,gainNode,source,'lowpass',400); break;
+    case 'thunder': source=createNoise(ctx,'brown',0.5); addFilter(ctx,gainNode,source,'lowpass',200); break;
+    case 'ocean': source=createOcean(ctx,gainNode); break;
+    case 'river': source=createNoise(ctx,'white',0.2); addFilter(ctx,gainNode,source,'bandpass',800,2); break;
+    case 'wind': source=createNoise(ctx,'pink',0.25); addFilter(ctx,gainNode,source,'bandpass',300,3); break;
+    case 'forest': source=createForest(ctx,gainNode); break;
+    case 'fire': source=createNoise(ctx,'brown',0.4); addFilter(ctx,gainNode,source,'lowpass',300); break;
+    case 'cafe': source=createNoise(ctx,'pink',0.15); addFilter(ctx,gainNode,source,'bandpass',600,0.5); break;
+    case 'space': source=createDrone(ctx,gainNode,40,0.3); break;
+    case 'tibetan': source=createTibetan(ctx,gainNode); break;
+    case 'binaural': source=createBinaural(ctx,gainNode); break;
+    case 'white': source=createNoise(ctx,'white',0.5); gainNode.connect(masterGain); break;
+    case 'brown': source=createNoise(ctx,'brown',0.5); gainNode.connect(masterGain); break;
+    case 'pink': source=createNoise(ctx,'pink',0.5); gainNode.connect(masterGain); break;
+    case 'night': source=createNight(ctx,gainNode); break;
+    case 'underwater': source=createDrone(ctx,gainNode,60,0.4); addFilter(ctx,gainNode,source,'lowpass',150); break;
+    default: source=createNoise(ctx,'white',0.3);
+  }
+  return{source,gainNode};
+}
+
+function createNoise(ctx,type,amp){
+  const bufSize=ctx.sampleRate*4;
+  const buf=ctx.createBuffer(2,bufSize,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch); let last=0;
+    for(let i=0;i<bufSize;i++){
+      const white=(Math.random()*2-1)*amp;
+      if(type==='brown'){last=(last+0.02*white)/1.02;d[i]=last*3.5;}
+      else if(type==='pink'){last=0.99765*last+white*0.0990460;d[i]=last+0.0555179*white;}
+      else d[i]=white;
+    }
+  }
+  const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true; src.start(); return src;
+}
+
+function addFilter(ctx,gainNode,source,type,freq,Q){
+  const f=ctx.createBiquadFilter(); f.type=type; f.frequency.value=freq||800; if(Q)f.Q.value=Q;
+  source.connect(f); f.connect(gainNode); return f;
+}
+
+function createOcean(ctx,gain){
+  const noise=createNoise(ctx,'brown',0.4);
+  const lfo=ctx.createOscillator(); lfo.frequency.value=0.1;
+  const lfoGain=ctx.createGain(); lfoGain.gain.value=200;
+  const filter=ctx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=400;
+  lfo.connect(lfoGain); lfoGain.connect(filter.frequency);
+  noise.connect(filter); filter.connect(gain); lfo.start(); return noise;
+}
+
+function createForest(ctx,gain){
+  const noise=createNoise(ctx,'pink',0.15);
+  const filter=ctx.createBiquadFilter(); filter.type='bandpass'; filter.frequency.value=2000; filter.Q.value=0.5;
+  noise.connect(filter); filter.connect(gain); return noise;
+}
+
+function createDrone(ctx,gain,freq,amp){
+  const osc=ctx.createOscillator(); osc.type='sine'; osc.frequency.value=freq;
+  const g=ctx.createGain(); g.gain.value=amp;
+  osc.connect(g); g.connect(gain); osc.start(); return osc;
+}
+
+function createTibetan(ctx,gain){
+  function bowl(f){ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; const g=ctx.createGain(); g.gain.setValueAtTime(0,ctx.currentTime); g.gain.linearRampToValueAtTime(0.15,ctx.currentTime+0.5); g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+8); o.connect(g); g.connect(gain); o.start(); o.stop(ctx.currentTime+8.5); }
+  function schedBowls(){ bowl(432); setTimeout(()=>bowl(528),3000); setTimeout(()=>bowl(639),6000); setTimeout(schedBowls,12000); }
+  schedBowls(); return ctx.createOscillator();
+}
+
+function createBinaural(ctx,gain){
+  const left=ctx.createOscillator(); left.frequency.value=200;
+  const right=ctx.createOscillator(); right.frequency.value=240;
+  const merger=ctx.createChannelMerger(2);
+  const lGain=ctx.createGain(); lGain.gain.value=0.2;
+  const rGain=ctx.createGain(); rGain.gain.value=0.2;
+  left.connect(lGain); lGain.connect(merger,0,0);
+  right.connect(rGain); rGain.connect(merger,0,1);
+  merger.connect(gain); left.start(); right.start(); return left;
+}
+
+function createNight(ctx,gain){
+  function cricket(freq){ const o=ctx.createOscillator(); o.type='square'; o.frequency.value=freq; const g=ctx.createGain(); g.gain.value=0.02; const lfo=ctx.createOscillator(); lfo.frequency.value=25; const lg=ctx.createGain(); lg.gain.value=0.01; lfo.connect(lg); lg.connect(g.gain); o.connect(g); g.connect(gain); o.start(); lfo.start(); return o; }
+  cricket(4800); cricket(5200); cricket(5600); return ctx.createOscillator();
+}
+
+// ── currentSound tracks the ONE playing sound ──
+let currentSoundId = null;
+
+function stopCurrentSound(cb){
+  if(!currentSoundId) { if(cb) cb(); return; }
+  const id=currentSoundId;
+  try{
+    const ctx=getAudioCtx();
+    soundNodes[id].gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime+0.4);
+    setTimeout(()=>{
+      try{ soundNodes[id].source.stop(); }catch(e){}
+      delete soundNodes[id]; delete soundVolumes[id];
+      currentSoundId=null;
+      if(cb) cb();
+    }, 450);
+  }catch(e){
+    delete soundNodes[id]; delete soundVolumes[id];
+    currentSoundId=null;
+    if(cb) cb();
+  }
+}
+
+function toggleSound(id){
+  if(currentSoundId===id){
+    // Same sound — stop it
+    stopCurrentSound(()=>{ renderSoundCards(); renderActiveSounds(); });
+  } else {
+    // Different sound — fade out current, then start new one
+    stopCurrentSound(()=>{
+      // Fade in new sound
+      soundNodes[id]=createSound(id);
+      // Fade in from 0
+      const ctx=getAudioCtx();
+      soundNodes[id].gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      soundNodes[id].gainNode.gain.linearRampToValueAtTime(soundVolumes[id]||0.5, ctx.currentTime+0.5);
+      currentSoundId=id;
+      renderSoundCards(); renderActiveSounds();
+    });
+  }
+}
+
+function updateMasterVol(v){
+  if(masterGain) masterGain.gain.value=v;
+  document.getElementById('masterVolPct').textContent=Math.round(v*100)+'%';
+}
+
+function updateSoundVol(id,v){
+  soundVolumes[id]=parseFloat(v);
+  if(soundNodes[id]) soundNodes[id].gainNode.gain.value=parseFloat(v);
+}
+
+function renderSoundCards(){
+  const nowPlaying=currentSoundId;
+  document.getElementById('soundsGrid').innerHTML=SOUNDS.map(s=>`
+    <div class="sound-card ${nowPlaying===s.id?'playing':''}" onclick="toggleSound('${s.id}')">
+      <span class="sc-icon">${s.icon}</span>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-desc">${nowPlaying===s.id?'<span style="color:#a78bfa;font-weight:700">▶ Playing</span>':s.desc}</div>
+      <div class="sc-wave">
+        <span style="--d:.4s;--delay:0s;--h:10px"></span>
+        <span style="--d:.5s;--delay:.1s;--h:14px"></span>
+        <span style="--d:.3s;--delay:.2s;--h:8px"></span>
+        <span style="--d:.6s;--delay:.05s;--h:12px"></span>
+        <span style="--d:.45s;--delay:.15s;--h:10px"></span>
+      </div>
+    </div>`).join('');
+}
+
+function renderActiveSounds(){
+  const el=document.getElementById('activeSoundsList');
+  if(!currentSoundId){
+    el.innerHTML='<div class="no-sounds">No sound playing. Select one above.</div>';
+    return;
+  }
+  const s=SOUNDS.find(s=>s.id===currentSoundId);
+  el.innerHTML=`<div class="active-sound-row">
+    <span class="as-icon">${s.icon}</span>
+    <span class="as-name">${s.name}</span>
+    <input type="range" class="as-vol" min="0" max="1" step="0.05"
+      value="${soundVolumes[currentSoundId]||0.5}"
+      oninput="updateSoundVol('${currentSoundId}',this.value)" title="Volume">
+    <button class="as-stop" onclick="toggleSound('${currentSoundId}')" title="Stop">×</button>
+  </div>`;
+}
+
+function initSounds(){
+  renderSoundCards(); renderActiveSounds();
+}
+
+// ═══════════════════════════════════════════════════════════
+// STARS BACKGROUND
+// ═══════════════════════════════════════════════════════════
+function generateStars(){
+  const c=document.getElementById('starsContainer');
+  if(c.children.length>0)return;
+  for(let i=0;i<120;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*3+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;--op:${0.4+Math.random()*.6}`;
+    c.appendChild(s);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUOTES
+// ═══════════════════════════════════════════════════════════
+const QUOTES=[
+  {t:'"Almost everything will work again if you unplug it for a few minutes — including you."',a:'Anne Lamott'},
+  {t:'"You can\'t pour from an empty cup. Take care of yourself first."',a:'Unknown'},
+  {t:'"Within you, there is a stillness and a sanctuary to which you can retreat at any time."',a:'Hermann Hesse'},
+  {t:'"The present moment is the only moment available to us, and it is the door to all moments."',a:'Thích Nhất Hạnh'},
+  {t:'"Breathe. You\'re going to be okay. Breathe and remember that you\'ve been in this place before."',a:'Daniell Koepke'},
+  {t:'"Rest is not idleness. To lie sometimes on the grass under trees on a summer\'s day is by no means a waste of time."',a:'John Lubbock'},
+  {t:'"You don\'t have to control your thoughts. You just have to stop letting them control you."',a:'Dan Millman'},
+  {t:'"Peace is the result of retraining your mind to process life as it is, rather than as you think it should be."',a:'Wayne Dyer'},
+  {t:'"In the middle of difficulty lies opportunity."',a:'Albert Einstein'},
+  {t:'"Your calm mind is the ultimate weapon against your challenges."',a:'Bryant McGill'},
+  {t:'"Almost everything will work again if you unplug it for a few minutes — including you."',a:'Anne Lamott'},
+  {t:'"The quieter you become, the more you can hear."',a:'Ram Dass'},
+  {t:'"Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment."',a:'Buddha'},
+  {t:'"You are the sky. Everything else — it\'s just the weather."',a:'Pema Chödrön'},
+  {t:'"Stop acting so small. You are the universe in ecstatic motion."',a:'Rumi'},
+];
+let quoteIdx=0;
+function nextQuote(){ quoteIdx=(quoteIdx+1)%QUOTES.length; const q=QUOTES[quoteIdx]; document.getElementById('quoteText').textContent=q.t; document.getElementById('quoteAuthor').textContent='— '+q.a; }
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function escHtml(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  renderTodos(); updateStats(); updatePomDisplay(); updatePomRing(); renderSessionDots();
+  // Randomise initial quote
+  quoteIdx=Math.floor(Math.random()*QUOTES.length);
+  const q=QUOTES[quoteIdx]; document.getElementById('quoteText').textContent=q.t; document.getElementById('quoteAuthor').textContent='— '+q.a;
+  // Update streak
+  const lastDay=localStorage.getItem('last_focus_day');
+  if(lastDay!==today()){
+    const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
+    const yd=yesterday.toISOString().slice(0,10);
+    let streak=parseInt(localStorage.getItem('focus_streak')||'0');
+    if(lastDay===yd) streak++; else streak=1;
+    localStorage.setItem('focus_streak',streak); localStorage.setItem('last_focus_day',today());
+    updateStats();
+  }
+});
+</script>
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

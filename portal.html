@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduNest — My Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── CSS Variables: Light & Dark ── */
+:root {
+  --ink:#0f0e17;--bg:#f5f3ef;--card:#fff;--border:#e8e4db;
+  --gold:#e8b84b;--sage:#3d6b5e;--rose:#c4535a;--muted:#888;
+  --nav-bg:#0f0e17;--hero-bg:linear-gradient(135deg,#0f0e17 0%,#2d2b3d 100%);
+  --input-bg:#fff;--shadow:0 4px 20px rgba(15,14,23,.08);
+  --text-primary:#0f0e17;--text-sec:#555;
+}
+[data-theme="dark"]{
+  --ink:#e2e8f0;--bg:#0d1117;--card:#161b22;--border:#30363d;
+  --muted:#8b949e;--nav-bg:#010409;--hero-bg:linear-gradient(135deg,#010409 0%,#0d1117 100%);
+  --input-bg:#21262d;--shadow:0 4px 20px rgba(0,0,0,.4);
+  --text-primary:#e2e8f0;--text-sec:#8b949e;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;color:var(--text-primary);background:var(--bg);min-height:100vh;transition:background .3s,color .3s}
+
+/* ── NAV ── */
+nav{background:var(--nav-bg);padding:0 32px;display:flex;align-items:center;gap:14px;
+  justify-content:space-between;height:64px;position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 20px rgba(0,0,0,.3);transition:background .3s}
+.nav-logo{display:flex;align-items:center;gap:11px}
+.nav-logo .mark{width:36px;height:36px;background:var(--gold);border-radius:9px;display:flex;
+  align-items:center;justify-content:center;font-family:'Playfair Display',serif;
+  font-size:16px;font-weight:900;color:#0f0e17;flex-shrink:0}
+.nav-logo span{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:white}
+.nav-search{flex:1;max-width:400px;position:relative;margin:0 20px}
+.nav-search input{width:100%;padding:9px 16px 9px 40px;background:rgba(255,255,255,.1);
+  border:1.5px solid rgba(255,255,255,.15);border-radius:22px;font-family:'DM Sans',sans-serif;
+  font-size:13px;color:white;outline:none;transition:.25s}
+.nav-search input::placeholder{color:rgba(255,255,255,.4)}
+.nav-search input:focus{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.4)}
+.nav-search .s-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:14px;pointer-events:none;opacity:.5}
+.search-results{position:absolute;top:calc(100%+8px);left:0;right:0;background:var(--card);
+  border:1.5px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);
+  z-index:300;overflow:hidden;display:none}
+.search-results.show{display:block}
+.sr-item{display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;
+  text-decoration:none;color:var(--text-primary);transition:.15s}
+.sr-item:hover{background:var(--bg)}
+.sr-icon{font-size:18px;flex-shrink:0}
+.sr-name{font-weight:600;font-size:13px}
+.sr-desc{font-size:11px;color:var(--muted)}
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.nav-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:13px;color:white;cursor:pointer;
+  text-decoration:none;transition:.2s;flex-shrink:0}
+.nav-avatar:hover{opacity:.85}
+.nav-name{color:rgba(255,255,255,.7);font-size:13px;font-weight:500;white-space:nowrap}
+.theme-toggle{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:white;padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+.theme-toggle:hover{background:rgba(255,255,255,.2)}
+.btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.8);padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-logout:hover{background:rgba(239,68,68,.25);color:white;border-color:rgba(239,68,68,.4)}
+
+/* ── HERO ── */
+.portal-hero{background:var(--hero-bg);padding:52px 40px;color:white;position:relative;overflow:hidden;transition:background .3s}
+.portal-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:400px;height:400px;
+  background:radial-gradient(circle,rgba(232,184,75,.12),transparent 70%);border-radius:50%}
+.portal-hero::after{content:'';position:absolute;bottom:-60px;left:25%;width:300px;height:300px;
+  background:radial-gradient(circle,rgba(61,107,94,.15),transparent 70%);border-radius:50%}
+.hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.hero-row{display:flex;align-items:flex-start;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.greeting-tag{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
+.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,46px);font-weight:900;margin-bottom:10px}
+.hero-sub{color:rgba(255,255,255,.55);font-size:15px;margin-bottom:0}
+.hero-time{text-align:right;flex-shrink:0}
+.hero-clock{font-family:'DM Sans',sans-serif;font-size:42px;font-weight:300;color:white;letter-spacing:2px;line-height:1}
+.hero-date-str{font-size:13px;color:rgba(255,255,255,.45);margin-top:6px;text-align:right}
+.stats-row{display:flex;gap:16px;margin-top:32px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:16px 20px;min-width:120px;cursor:default;transition:.25s;backdrop-filter:blur(10px)}
+.stat:hover{background:rgba(255,255,255,.14);transform:translateY(-2px)}
+.stat .num{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold);margin-bottom:3px}
+.stat .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.45);font-weight:600}
+.stat.clickable{cursor:pointer}
+
+/* ── MAIN ── */
+.main{max-width:1200px;margin:0 auto;padding:44px 40px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px}
+.sec-title{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:var(--text-primary)}
+.sec-sub{font-size:13px;color:var(--muted);margin-top:3px}
+
+/* ── APP GRID ── */
+.apps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;margin-bottom:52px}
+.app-card{background:var(--card);border-radius:18px;padding:28px;border:1.5px solid var(--border);
+  cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);text-decoration:none;
+  display:block;position:relative;overflow:hidden}
+.app-card::after{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;
+  background:radial-gradient(circle at 20% 80%,rgba(232,184,75,.06),transparent 60%)}
+.app-card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(15,14,23,.12);border-color:rgba(232,184,75,.35)}
+.app-card:hover::after{opacity:1}
+[data-theme="dark"] .app-card:hover{box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.app-card.hidden{display:none}
+.app-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;margin-bottom:18px;position:relative;z-index:1}
+.app-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+  color:var(--text-primary);margin-bottom:7px;position:relative;z-index:1;transition:color .3s}
+.app-desc{font-size:12px;color:var(--text-sec);line-height:1.6;margin-bottom:18px;position:relative;z-index:1;transition:color .3s}
+.app-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+  padding:4px 11px;border-radius:16px;text-transform:uppercase;letter-spacing:.7px;position:relative;z-index:1}
+.arrow-icon{position:absolute;right:20px;bottom:20px;width:30px;height:30px;background:var(--ink);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:white;font-size:13px;opacity:0;transition:all .3s;z-index:1}
+.app-card:hover .arrow-icon{opacity:1;right:16px}
+[data-theme="dark"] .arrow-icon{background:var(--gold);color:#0f0e17}
+
+/* ── BOTTOM GRID ── */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.info-card{background:var(--card);border-radius:16px;padding:24px;border:1.5px solid var(--border);transition:background .3s,border .3s}
+.info-card h3{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:16px}
+
+/* Profile card */
+.profile-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.big-avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;flex-shrink:0}
+.profile-info .pname{font-weight:700;font-size:15px;color:var(--text-primary)}
+.profile-info .pid{font-size:12px;color:var(--muted);margin-top:2px}
+.profile-detail{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.profile-detail:last-child{border-bottom:none}
+.profile-detail .key{color:var(--muted)}
+.profile-detail .val{font-weight:500;color:var(--text-primary)}
+.edit-profile-link{display:block;margin-top:14px;text-align:center;font-size:12px;font-weight:700;
+  color:var(--sage);text-decoration:none;padding:8px;border-radius:9px;border:1.5px solid var(--border);transition:.2s}
+.edit-profile-link:hover{background:var(--bg);border-color:var(--sage)}
+
+/* Activity feed */
+.activity-feed{display:flex;flex-direction:column;gap:0}
+.act-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.act-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.act-content{flex:1}
+.act-title{font-size:13px;font-weight:600;color:var(--text-primary)}
+.act-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.act-link{font-size:11px;font-weight:700;text-decoration:none;color:var(--sage);margin-top:3px;display:inline-block;transition:.15s}
+.act-link:hover{color:var(--ink)}
+.feed-empty{text-align:center;color:var(--muted);font-size:13px;padding:20px 0}
+
+/* Quick actions */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qa-btn{padding:11px 14px;border-radius:11px;border:1.5px solid var(--border);background:var(--card);
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  color:var(--text-primary);transition:.2s;text-align:left;text-decoration:none;display:block}
+.qa-btn:hover{border-color:var(--gold);background:var(--bg);transform:translateY(-1px)}
+.qa-btn .qa-icon{font-size:18px;display:block;margin-bottom:5px}
+.qa-btn .qa-label{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:2px}
+
+/* No-results */
+.no-results{text-align:center;padding:60px 20px;color:var(--muted);grid-column:1/-1;display:none}
+.no-results.show{display:block}
+.no-results .icon{font-size:44px;margin-bottom:10px}
+
+@media(max-width:900px){
+  .portal-hero,.main{padding-left:20px;padding-right:20px}
+  .bottom-grid{grid-template-columns:1fr}
+  .nav-search{display:none}
+  .hero-time{display:none}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">
+    <div class="mark">EN</div>
+    <span>EduNest</span>
+  </div>
+
+  <!-- Search -->
+  <div class="nav-search">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="appSearch" placeholder="Search apps…" oninput="searchApps(this.value)" autocomplete="off">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="EduTheme.toggle()">🌙 Dark</button>
+    <span class="nav-name" id="navName">Loading…</span>
+    <a href="profile.html" class="nav-avatar" id="navAvatar" title="My Profile">?</a>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="portal-hero">
+  <div class="hero-inner">
+    <div class="hero-row">
+      <div>
+        <div class="greeting-tag" id="greetingTag">✦ Good morning</div>
+        <h1 class="hero-h1" id="heroName">Welcome back!</h1>
+        <p class="hero-sub" id="heroSub">Ready to conquer today?</p>
+      </div>
+      <div class="hero-time">
+        <div class="hero-clock" id="liveClock">00:00</div>
+        <div class="hero-date-str" id="liveDate">Loading…</div>
+      </div>
+    </div>
+    <div class="stats-row" id="statsRow">
+      <div class="stat"><div class="num" id="statId">—</div><div class="lbl">Student ID</div></div>
+      <div class="stat"><div class="num" id="statYear">—</div><div class="lbl">Year</div></div>
+      <div class="stat clickable" onclick="location.href='tasks.html'"><div class="num" id="statTasks">—</div><div class="lbl">Tasks Done</div></div>
+      <div class="stat clickable" onclick="location.href='calendar.html'"><div class="num" id="statEvents">—</div><div class="lbl">Upcoming Events</div></div>
+      <div class="stat clickable" onclick="location.href='calendar.html'"><div class="num" id="statGoals">—</div><div class="lbl">Active Goals</div></div>
+      <div class="stat clickable" onclick="location.href='finance.html'"><div class="num" id="statBalance">—</div><div class="lbl">Balance (KSh)</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sec-hdr">
+    <div>
+      <div class="sec-title">Your Applications</div>
+      <div class="sec-sub">Everything you need for student life, in one place</div>
+    </div>
+  </div>
+
+  <div class="apps-grid" id="appsGrid">
+    <a href="tasks.html" class="app-card" data-name="Task Manager" data-tags="tasks todo checklist">
+      <div class="app-icon" style="background:#e8f4f1">📋</div>
+      <div class="app-name">Task Manager</div>
+      <div class="app-desc">Manage your to-do list, set priorities and due dates, track progress across all your tasks.</div>
+      <div class="app-badge" style="background:#e8f4f1;color:#065f46">📚 Study Tools</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="calendar.html" class="app-card" data-name="Calendar & Goals" data-tags="calendar events schedule goals">
+      <div class="app-icon" style="background:#fef9e7">📅</div>
+      <div class="app-name">Calendar & Goals</div>
+      <div class="app-desc">Plan your schedule with a full month calendar and set long-term goals with progress tracking.</div>
+      <div class="app-badge" style="background:#fef9e7;color:#92400e">🎯 Goal Setting</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="finance.html" class="app-card" data-name="Finance Manager" data-tags="finance money budget expenses income">
+      <div class="app-icon" style="background:#fde8e9">💰</div>
+      <div class="app-name">Finance Manager</div>
+      <div class="app-desc">Track income and expenses, set category budgets, and get a clear view of your financial health.</div>
+      <div class="app-badge" style="background:#fde8e9;color:#9b1c1c">📊 Budgeting</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="entertainment.html" class="app-card" data-name="Entertainment Hub" data-tags="videos movies music entertainment media">
+      <div class="app-icon" style="background:#eaf0fe">🎬</div>
+      <div class="app-name">Entertainment Hub</div>
+      <div class="app-desc">Upload your favourite videos and watch them on demand. Links to Netflix, Spotify, YouTube and more.</div>
+      <div class="app-badge" style="background:#eaf0fe;color:#3730a3">🎥 Media</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="study.html" class="app-card" data-name="Study Area" data-tags="study files pdf notes resources learning">
+      <div class="app-icon" style="background:#e8f4f1">📚</div>
+      <div class="app-name">Study Area</div>
+      <div class="app-desc">Upload PDFs, images and videos for study. Link to freeCodeCamp, Khan Academy and 20+ resources.</div>
+      <div class="app-badge" style="background:#e8f4f1;color:#065f46">🔗 Resources</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="notes.html" class="app-card" data-name="Notes & Whiteboard" data-tags="notes whiteboard draw write ideas">
+      <div class="app-icon" style="background:#fce7f3">📝</div>
+      <div class="app-name">Notes & Whiteboard</div>
+      <div class="app-desc">Multiple colour-coded note boards with tags, and freehand digital whiteboards for every subject.</div>
+      <div class="app-badge" style="background:#fce7f3;color:#9d174d">🎨 Creative</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="focus.html" class="app-card" data-name="Focus & Meditation" data-tags="focus pomodoro meditation breathing sounds mindfulness">
+      <div class="app-icon" style="background:#e0f2fe">🧘</div>
+      <div class="app-name">Focus & Meditation</div>
+      <div class="app-desc">Pomodoro timer, breathing exercises, meditation timer, 16 ambient soundscapes and a focus to-do list.</div>
+      <div class="app-badge" style="background:#e0f2fe;color:#075985">🎵 Mindfulness</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="profile.html" class="app-card" data-name="Profile & Settings" data-tags="profile settings account password avatar">
+      <div class="app-icon" style="background:#f5f3ef">⚙️</div>
+      <div class="app-name">Profile & Settings</div>
+      <div class="app-desc">Edit your student ID, email, course, avatar colour, password, and view your usage statistics.</div>
+      <div class="app-badge" style="background:#f5f3ef;color:#555">👤 Account</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="analytics.html" class="app-card" data-name="Analytics" data-tags="analytics charts stats reports productivity">
+      <div class="app-icon" style="background:#fef3c7">📊</div>
+      <div class="app-name">Analytics</div>
+      <div class="app-desc">Visual charts of your task completion, spending breakdown, goal progress, study activity, and productivity streaks.</div>
+      <div class="app-badge" style="background:#fef3c7;color:#92400e">📈 Insights</div>
+      <div class="arrow-icon">→</div>
+    </a>
+    <a href="timetable.html" class="app-card" data-name="Timetable" data-tags="timetable schedule classes lectures weekly">
+      <div class="app-icon" style="background:#ede9fe">🗓</div>
+      <div class="app-name">Timetable</div>
+      <div class="app-desc">Build your weekly class schedule. See your next lecture with a live countdown and colour-coded slots per subject.</div>
+      <div class="app-badge" style="background:#ede9fe;color:#5b21b6">🏫 Classes</div>
+      <div class="arrow-icon">→</div>
+    </a>
+  </div>
+  <div class="no-results" id="noResults">
+    <div class="icon">🔍</div>
+    <p>No apps match "<span id="noResultsQuery"></span>"</p>
+  </div>
+
+  <!-- Bottom info grid -->
+  <div class="bottom-grid">
+    <!-- Profile -->
+    <div class="info-card">
+      <h3>My Profile</h3>
+      <div class="profile-row">
+        <div class="big-avatar" id="bigAvatar">ST</div>
+        <div class="profile-info">
+          <div class="pname" id="profileName">Loading…</div>
+          <div class="pid" id="profileId">ID: —</div>
+        </div>
+      </div>
+      <div class="profile-detail"><span class="key">Email</span><span class="val" id="profileEmail">—</span></div>
+      <div class="profile-detail"><span class="key">Programme</span><span class="val" id="profileCourse">—</span></div>
+      <div class="profile-detail"><span class="key">Year</span><span class="val" id="profileYear">—</span></div>
+      <a href="profile.html" class="edit-profile-link">✏️ Edit Profile</a>
+    </div>
+
+    <!-- Live Activity Feed -->
+    <div class="info-card">
+      <h3>Activity Overview</h3>
+      <div class="activity-feed" id="activityFeed">
+        <div class="feed-empty">Loading activity…</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="info-card">
+      <h3>Quick Actions</h3>
+      <div class="qa-grid">
+        <a href="tasks.html" class="qa-btn"><span class="qa-icon">✅</span>New Task<span class="qa-label">Task Manager</span></a>
+        <a href="calendar.html" class="qa-btn"><span class="qa-icon">📅</span>Add Event<span class="qa-label">Calendar</span></a>
+        <a href="finance.html" class="qa-btn"><span class="qa-icon">💸</span>Log Expense<span class="qa-label">Finance</span></a>
+        <a href="notes.html" class="qa-btn"><span class="qa-icon">📝</span>New Note<span class="qa-label">Notes</span></a>
+        <a href="study.html" class="qa-btn"><span class="qa-icon">📚</span>Study Files<span class="qa-label">Study Area</span></a>
+        <a href="focus.html" class="qa-btn"><span class="qa-icon">🧘</span>Focus Mode<span class="qa-label">Meditation</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="theme.js"></script>
+<script src="notifications.js"></script>
+<script src="offline.js"></script>
+<script>
+// ── Live Clock ──
+function updateClock(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0'), m=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('liveClock').textContent=h+':'+m;
+  document.getElementById('liveDate').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Greeting by time
+  const hr=now.getHours();
+  const greet=hr<12?'☀ Good morning':hr<17?'🌤 Good afternoon':hr<21?'🌆 Good evening':'🌙 Good night';
+  document.getElementById('greetingTag').textContent='✦ '+greet.replace(/^[^ ]+ /,'');
+  // update title every minute
+  document.title=`EduNest — ${h}:${m}`;
+}
+setInterval(updateClock,10000); updateClock();
+
+// ── App Search ──
+const ALL_APPS=[
+  {name:'Task Manager',tags:'tasks todo checklist',url:'tasks.html',icon:'📋'},
+  {name:'Calendar & Goals',tags:'calendar events schedule goals',url:'calendar.html',icon:'📅'},
+  {name:'Finance Manager',tags:'finance money budget expenses income',url:'finance.html',icon:'💰'},
+  {name:'Entertainment Hub',tags:'videos movies music entertainment media',url:'entertainment.html',icon:'🎬'},
+  {name:'Study Area',tags:'study files pdf notes resources learning',url:'study.html',icon:'📚'},
+  {name:'Notes & Whiteboard',tags:'notes whiteboard draw write ideas',url:'notes.html',icon:'📝'},
+  {name:'Focus & Meditation',tags:'focus pomodoro meditation breathing sounds',url:'focus.html',icon:'🧘'},
+  {name:'Profile & Settings',tags:'profile settings account password',url:'profile.html',icon:'⚙️'},
+];
+
+function searchApps(q){
+  const cards=document.querySelectorAll('.app-card');
+  const noR=document.getElementById('noResults');
+  const resList=document.getElementById('searchResults');
+  const trimmed=q.trim().toLowerCase();
+  if(!trimmed){
+    cards.forEach(c=>c.classList.remove('hidden'));
+    noR.classList.remove('show'); resList.classList.remove('show'); return;
+  }
+  let visible=0;
+  cards.forEach(c=>{
+    const n=(c.dataset.name||'').toLowerCase(), t=(c.dataset.tags||'').toLowerCase();
+    const match=n.includes(trimmed)||t.includes(trimmed);
+    c.classList.toggle('hidden',!match);
+    if(match) visible++;
+  });
+  noR.classList.toggle('show',visible===0);
+  document.getElementById('noResultsQuery').textContent=q;
+  // Dropdown results
+  const hits=ALL_APPS.filter(a=>a.name.toLowerCase().includes(trimmed)||a.tags.includes(trimmed));
+  if(hits.length){
+    resList.innerHTML=hits.map(a=>`<a href="${a.url}" class="sr-item"><span class="sr-icon">${a.icon}</span><div><div class="sr-name">${a.name}</div><div class="sr-desc">${a.url.replace('.html','')}</div></div></a>`).join('');
+    resList.classList.add('show');
+  } else { resList.classList.remove('show'); }
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.nav-search')) document.getElementById('searchResults').classList.remove('show');
+});
+
+// ── Student data + live stats ──
+async function loadStudent(){
+  try{
+    const r=await fetch('auth.php?action=check');
+    const d=await r.json();
+    if(!d.success){window.location.href='index.html';return;}
+    const s=d.student;
+    localStorage.setItem('student',JSON.stringify(s));
+    fillProfile(s);
+    loadLiveStats();
+  }catch(e){
+    const s=JSON.parse(localStorage.getItem('student')||'null');
+    if(!s){window.location.href='index.html';return;}
+    fillProfile(s);
+  }
+}
+
+async function loadLiveStats(){
+  try{
+    const r=await fetch('profile_api.php?action=get_stats');
+    const d=await r.json();
+    if(!d.success)return;
+    const s=d.stats;
+    document.getElementById('statTasks').textContent=s.tasks_done+'/'+s.tasks_total;
+    document.getElementById('statEvents').textContent=s.upcoming_events;
+    document.getElementById('statGoals').textContent=s.goals_total-s.goals_done;
+    const bal=s.balance||0;
+    document.getElementById('statBalance').textContent=(bal>=0?'':'−')+'KSh '+(Math.abs(bal)/1000).toFixed(1)+'k';
+    document.getElementById('statBalance').closest('.stat').style.color=bal>=0?'inherit':'#f43f5e';
+    renderActivityFeed(s);
+  }catch(e){}
+}
+
+function renderActivityFeed(s){
+  const feed=document.getElementById('activityFeed');
+  const items=[];
+  if(s.tasks_total>0) items.push({color:'#3d6b5e',title:`${s.tasks_done} of ${s.tasks_total} tasks completed`,meta:'Task Manager',link:'tasks.html'});
+  if(s.upcoming_events>0) items.push({color:'#d97706',title:`${s.upcoming_events} upcoming event${s.upcoming_events!==1?'s':''}`,meta:'Calendar',link:'calendar.html'});
+  const active=s.goals_total-s.goals_done;
+  if(s.goals_total>0) items.push({color:'#7c3aed',title:`${active} active goal${active!==1?'s':''} in progress`,meta:'Goals',link:'calendar.html'});
+  if(s.videos>0) items.push({color:'#4f46e5',title:`${s.videos} video${s.videos!==1?'s':''} in your library`,meta:'Entertainment',link:'entertainment.html'});
+  if(s.notes>0) items.push({color:'#db2777',title:`${s.notes} note${s.notes!==1?'s':''} saved`,meta:'Notes & Whiteboard',link:'notes.html'});
+  const bal=s.balance||0;
+  items.push({color:bal>=0?'#059669':'#dc2626',title:`Monthly balance: KSh ${bal.toLocaleString()}`,meta:'Finance Manager',link:'finance.html'});
+  if(!items.length){feed.innerHTML='<div class="feed-empty">No activity yet — get started!</div>';return;}
+  feed.innerHTML=items.map(i=>`<div class="act-item">
+    <div class="act-dot" style="background:${i.color}"></div>
+    <div class="act-content">
+      <div class="act-title">${i.title}</div>
+      <div class="act-meta">${i.meta}</div>
+      <a href="${i.link}" class="act-link">Open →</a>
+    </div>
+  </div>`).join('');
+}
+
+function fillProfile(s){
+  const initials=s.full_name?s.full_name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2):'ST';
+  const color=s.avatar_color||'#4f46e5';
+  document.getElementById('navName').textContent=s.full_name||'Student';
+  document.getElementById('navAvatar').textContent=initials;
+  document.getElementById('navAvatar').style.background=color;
+  const first=s.full_name?.split(' ')[0]||'Student';
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':'hr<17'?'Good afternoon':hr<21?'Good evening':'Good night';
+  document.getElementById('heroName').textContent=(hr<12?'Good morning, ':hr<17?'Good afternoon, ':hr<21?'Good evening, ':'Good night, ')+first+'!';
+  document.getElementById('heroSub').textContent=`${s.student_id||'No ID'} · ${s.course||'General Studies'} · Year ${s.year_of_study||1}`;
+  document.getElementById('statId').textContent=s.student_id||'—';
+  document.getElementById('statYear').textContent='Y'+(s.year_of_study||1);
+  document.getElementById('bigAvatar').textContent=initials;
+  document.getElementById('bigAvatar').style.background=color;
+  document.getElementById('profileName').textContent=s.full_name||'—';
+  document.getElementById('profileId').textContent='ID: '+(s.student_id||'—');
+  document.getElementById('profileEmail').textContent=s.email||'—';
+  document.getElementById('profileCourse').textContent=s.course||'—';
+  document.getElementById('profileYear').textContent='Year '+(s.year_of_study||1);
+}
+
+async function logout(){
+  try{await fetch('auth.php?action=logout');}catch(e){}
+  localStorage.removeItem('student');
+  window.location.href='index.html';
+}
+
+loadStudent();
+</script>
+</body>
+</html>
